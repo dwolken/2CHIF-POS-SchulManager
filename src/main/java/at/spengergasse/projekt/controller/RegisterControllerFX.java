@@ -1,9 +1,6 @@
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.CsvManager;
-import at.spengergasse.projekt.model.Encoding;
-import at.spengergasse.projekt.model.Encoding.EncodingType;
-import at.spengergasse.projekt.model.EncodingException;
 import at.spengergasse.projekt.view.RegisterViewFX;
 import javafx.event.ActionEvent;
 import javafx.stage.Stage;
@@ -50,15 +47,7 @@ public class RegisterControllerFX {
             return;
         }
 
-        String hashed;
-        try {
-            hashed = new Encoding(password, EncodingType.SHA256).bytesToHex();
-        } catch (Exception e) {
-            view.setError("Fehler bei der Verschlüsselung.");
-            return;
-        }
-
-        boolean success = CsvManager.registerUser(username, "user", hashed);
+        boolean success = CsvManager.registerUser(username, "user", password);
         if (!success) {
             view.setError("Benutzername bereits vergeben.");
             return;

@@ -1,30 +1,48 @@
 package at.spengergasse.projekt.model;
 
+/**
+ * Eigene Exception, die bei Fehlern während der Kodierung (Hashing) ausgelöst
+ * werden kann.
+ */
 public class EncodingException extends Exception {
 
-	public EncodingException() {
-		// TODO Auto-generated constructor stub
-	}
+    /** Erstellt eine neue EncodingException ohne Nachricht. */
+    public EncodingException() {
+        super();
+    }
 
-	public EncodingException(String arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
-	}
+    /**
+     * Erstellt eine neue EncodingException mit Nachricht.
+     *
+     * @param message Fehlerbeschreibung
+     */
+    public EncodingException(String message) {
+        super(message);
+    }
 
-	public EncodingException(Throwable arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
-	}
+    /**
+     * Erstellt eine neue EncodingException mit Ursache.
+     *
+     * @param cause ursprüngliche Exception
+     */
+    public EncodingException(Throwable cause) {
+        super(cause);
+    }
 
-	public EncodingException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
-	}
+    /**
+     * Erstellt eine neue EncodingException mit Nachricht und Ursache.
+     *
+     * @param message Fehlermeldung
+     * @param cause   Auslösende Exception
+     */
+    public EncodingException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public EncodingException(String arg0, Throwable arg1, boolean arg2,
-			boolean arg3) {
-		super(arg0, arg1, arg2, arg3);
-		// TODO Auto-generated constructor stub
-	}
-
+    /**
+     * Vollständiger Konstruktor.
+     */
+    public EncodingException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

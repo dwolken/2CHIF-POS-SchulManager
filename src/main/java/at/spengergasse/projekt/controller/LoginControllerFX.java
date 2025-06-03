@@ -5,13 +5,15 @@ import at.spengergasse.projekt.model.User;
 import at.spengergasse.projekt.view.AdminViewFX;
 import at.spengergasse.projekt.view.LoginViewFX;
 import at.spengergasse.projekt.view.MainViewFX;
-import javafx.event.ActionEvent;
+import at.spengergasse.projekt.view.RegisterViewFX;
 import javafx.scene.Scene;
+import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 
 /**
- * Controller für den Login-Vorgang.
- * Entscheidet nach erfolgreichem Login über Benutzer- oder Admin-Oberfläche.
+ * Controller für den Login-Vorgang. Er verarbeitet die Login-Eingaben,
+ * entscheidet über den Wechsel zur Benutzer- oder Admin-Oberfläche und
+ * kann ein Registrierungsfenster öffnen.
  */
 public class LoginControllerFX {
 
@@ -29,6 +31,19 @@ public class LoginControllerFX {
         this.stage = stage;
 
         view.getLoginButton().setOnAction(this::handleLogin);
+        view.getRegisterButton().setOnAction(e -> openRegisterWindow());
+    }
+
+    /**
+     * Öffnet das Registrierungsfenster in einem neuen Stage.
+     */
+    private void openRegisterWindow() {
+        RegisterViewFX registerView = new RegisterViewFX();
+        Stage registerStage = new Stage();
+        new RegisterControllerFX(registerView, registerStage);
+        registerStage.setScene(new Scene(registerView, 400, 300));
+        registerStage.setTitle("Benutzer registrieren");
+        registerStage.show();
     }
 
     /**
