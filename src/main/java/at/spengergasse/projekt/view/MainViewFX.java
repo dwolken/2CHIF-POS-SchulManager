@@ -1,145 +1,119 @@
 package at.spengergasse.projekt.view;
 
-import at.spengergasse.projekt.model.User;
+import at.spengergasse.projekt.controller.MainControllerFX;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
 /**
- * Hauptansicht nach Login. Zeigt Navigation, Begrüßung, Menü und Inhalt.
- * Wird vom MainControllerFX gesteuert.
+ * Hauptansicht nach erfolgreichem Login.
+ * Zeigt Navigation, Buttons, Footer und lädt zentrale Panels.
  */
-public class MainViewFX extends BorderPane {
+public class MainViewFX {
 
-    // Navigations-Buttons
-    private final Button terminButton = new Button("Termine");
-    private final Button abmeldenButton = new Button("Abmelden");
-    private final Button zurueckButton = new Button("Zurück zur Startseite");
-
-    // Menüeinträge
-    private final MenuItem neueInstanzMenuItem = new MenuItem("Neue Instanz öffnen");
-    private final MenuItem beendenMenuItem = new MenuItem("Fenster schließen");
-    private final MenuItem pfadAendernMenuItem = new MenuItem("Standard-Datenpfad ändern");
-    private final MenuItem themeWechselnMenuItem = new MenuItem("Theme wechseln");
-
-    // Footer & Begrüßung
-    private final Label begruessungLabel = new Label();
-    private final Label footerLabel = new Label("Angemeldet als: ");
-    private final Label pfadLabel = new Label("Pfad: ");
-
-    private final VBox menuBox = new VBox(10);
+    private final BorderPane root;
+    private Label footerLabel;
+    private final MainControllerFX controller;
 
     /**
-     * Standardkonstruktor.
+     * Erstellt die Hauptansicht mit Navigation und Inhalt.
+     * @param primaryStage Hauptfenster
+     * @param username Angemeldeter Benutzername
      */
-    public MainViewFX() {
-        initLayout();
+    public MainViewFX(Stage primaryStage, String username) {
+        this.controller = new MainControllerFX(this, username);
+
+        root = new BorderPane();
+        root.setPadding(new Insets(10));
+
+        createMenuBar(primaryStage);
+        createButtonBar();
+        createFooter(username);
+
+        Scene scene = new Scene(root, 800, 600);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("SchulManager - Willkommen " + username);
+        primaryStage.show();
+
+        controller.loadTerminView();
     }
 
-    /**
-     * Konstruktor mit Begrüßung.
-     * @param username Benutzername
-     */
-    public MainViewFX(String username) {
-        initLayout();
-        setBegruessung(username);
-    }
-
-    /**
-     * Neuer Konstruktor für vollständige Benutzer-Objekte.
-     * @param user User-Objekt mit Name + mehr.
-     */
-    public MainViewFX(User user) {
-        initLayout();
-        setBegruessung(user.getUsername());
-        setFooterInfo(user.getUsername(), "Pfad: wird später gesetzt"); // oder dynamisch
-    }
-
-    private void initLayout() {
-        setPadding(new Insets(10));
-
-        // Menüleiste oben
+    private void createMenuBar(Stage stage) {
         MenuBar menuBar = new MenuBar();
 
         Menu dateiMenu = new Menu("Datei");
-        dateiMenu.getItems().addAll(neueInstanzMenuItem, beendenMenuItem, pfadAendernMenuItem);
+        MenuItem neueInstanz = new MenuItem("Neue Instanz öffnen");
+        MenuItem fensterSchließen = new MenuItem("Fenster schließen");
+        MenuItem pfadÄndern = new MenuItem("Standard-Datenpfad ändern");
+
+        neueInstanz.setOnAction(controller::handleNeueInstanz);
+        fensterSchließen.setOnAction(e -> stage.close());
+        pfadÄndern.setOnAction(controller::handlePfadAendern);
+
+        dateiMenu.getItems().addAll(neueInstanz, fensterSchließen, pfadÄndern);
 
         Menu einstellungenMenu = new Menu("Einstellungen");
-        einstellungenMenu.getItems().add(themeWechselnMenuItem);
 
         menuBar.getMenus().addAll(dateiMenu, einstellungenMenu);
 
-        // Begrüßung
-        begruessungLabel.setFont(new Font("Arial", 22));
-        VBox topBox = new VBox(10, menuBar, begruessungLabel);
-        topBox.setAlignment(Pos.CENTER_LEFT);
-        setTop(topBox);
-
-        // Navigation links
-        menuBox.getChildren().addAll(terminButton, zurueckButton, abmeldenButton);
-        menuBox.setAlignment(Pos.CENTER_LEFT);
-        menuBox.setPadding(new Insets(10));
-        setLeft(menuBox);
-
-        // Footer
-        HBox footerBox = new HBox(20, footerLabel, pfadLabel);
-        footerBox.setPadding(new Insets(10));
-        footerBox.setAlignment(Pos.CENTER);
-        setBottom(footerBox);
-
-        setStyle("-fx-background-color: white;");
+        root.setTop(menuBar);
     }
 
-    public Node createGreeting(String text) {
-        Label label = new Label(text);
-        label.setFont(new Font("Arial", 24));
-        VBox box = new VBox(label);
-        box.setAlignment(Pos.CENTER);
-        box.setPadding(new Insets(30));
-        return box;
+    private void createButtonBar() {
+        HBox buttonBox = new HBox(10);
+        buttonBox.setPadding(new Insets(10));
+        buttonBox.setAlignment(Pos.CENTER);
+
+        Button termineButton = new Button("Termine");
+        Button statistikButton = new Button("Statistik");
+        Button zieleButton = new Button("Ziele");
+
+        termineButton.setOnAction(controller::handleTermine);
+        statistikButton.setOnAction(controller::handleStatistik);
+        zieleButton.setOnAction(controller::handleZiele);
+
+        buttonBox.getChildren().addAll(termineButton, statistikButton, zieleButton);
+        root.setCenter(buttonBox);
     }
 
-    public void setMainContent(Node node) {
-        setCenter(node);
+    private void createFooter(String username) {
+        HBox footer = new HBox(10);
+        footer.setPadding(new Insets(8));
+        footer.setAlignment(Pos.CENTER_LEFT);
+        footer.getStyleClass().add("footer");
+
+        Label userLabel = new Label("Angemeldet als: " + username);
+        footerLabel = new Label("Speicherpfad: [Standardpfad wird hier angezeigt]");
+
+        Button logoutButton = new Button("Abmelden");
+        logoutButton.setOnAction(controller::handleLogout);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        footer.getChildren().addAll(userLabel, spacer, footerLabel, logoutButton);
+        root.setBottom(footer);
     }
 
-    public void setBegruessung(String username) {
-        begruessungLabel.setText("Willkommen, " + username);
+    /**
+     * Erlaubt dem Controller, den zentralen Panel-Inhalt zu ändern.
+     * @param node Neuer Knoten für den Center-Bereich
+     */
+    public void setCenterContent(javafx.scene.Node node) {
+        root.setCenter(node);
     }
 
-    public void setFooterInfo(String username, String pfad) {
-        footerLabel.setText("Angemeldet als: " + username);
-        pfadLabel.setText("Datenpfad: " + pfad);
-    }
-
-    public Button getTerminButton() {
-        return terminButton;
-    }
-
-    public Button getAbmeldenButton() {
-        return abmeldenButton;
-    }
-
-    public Button getZurueckButton() {
-        return zurueckButton;
-    }
-
-    public MenuItem getPfadAendernMenuItem() {
-        return pfadAendernMenuItem;
-    }
-
-    public MenuItem getNeueInstanzMenuItem() {
-        return neueInstanzMenuItem;
-    }
-
-    public MenuItem getBeendenMenuItem() {
-        return beendenMenuItem;
-    }
-
-    public MenuItem getThemeWechselnMenuItem() {
-        return themeWechselnMenuItem;
+    /**
+     * Setzt den Speicherpfad im Footer.
+     * @param pfad Text für den Pfad
+     */
+    public void setFooterPath(String pfad) {
+        if (footerLabel != null) {
+            footerLabel.setText("Speicherpfad: " + pfad);
+        }
     }
 }

@@ -1,68 +1,108 @@
 package at.spengergasse.projekt.controller;
 
-import at.spengergasse.projekt.model.CsvManager;
-import at.spengergasse.projekt.model.User;
-import at.spengergasse.projekt.view.AdminViewFX;
 import at.spengergasse.projekt.view.LoginViewFX;
 import at.spengergasse.projekt.view.MainViewFX;
+import at.spengergasse.projekt.model.CsvManager;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 /**
- * Controller für den Login-Vorgang.
- * Entscheidet nach erfolgreichem Login über Benutzer- oder Admin-Oberfläche.
+ * Dieser Controller verarbeitet die Logik für Login und Registrierung.
+ * Er übernimmt Event-Handling und startet die MainView bei Erfolg.
  */
 public class LoginControllerFX {
 
     private final LoginViewFX view;
     private final Stage stage;
 
-    /**
-     * Konstruktor des LoginControllers.
-     *
-     * @param view  die Login-Oberfläche
-     * @param stage das JavaFX-Hauptfenster
-     */
     public LoginControllerFX(LoginViewFX view, Stage stage) {
         this.view = view;
         this.stage = stage;
-
-        view.getLoginButton().setOnAction(this::handleLogin);
     }
 
     /**
-     * Verarbeitet den Login-Klick.
-     *
-     * @param event das ausgelöste Event
+     * Verknüpft Button- und Tastatur-Events mit ihrer Funktion.
+     * @param scene aktuelle JavaFX-Scene
      */
-    private void handleLogin(ActionEvent event) {
-        String username = view.getUsername().trim();
-        String password = view.getPassword().trim();
+    public void setupEventHandling(Scene scene) {
+        view.getLoginButton().addEventHandler(ActionEvent.ACTION, this::handleLogin);
+        view.getRegisterButton().addEventHandler(ActionEvent.ACTION, this::handleRegistration);
+
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                if (!view.getUsernameField().getText().isEmpty() && !view.getPasswordField().getText().isEmpty()) {
+                    handleLogin(new ActionEvent());
+                } else {
+                    handleRegistration(new ActionEvent());
+                }
+            }
+        });
+    }
+
+    private void handleLogin(ActionEvent e) {
+        String username = view.getUsernameField().getText().trim();
+        String password = view.getPasswordField().getText().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            view.setError("Bitte fülle alle Felder aus.");
+            showError("Bitte alle Felder ausfüllen.");
             return;
         }
 
-        User user = CsvManager.validateLogin(username, password);
-        if (user == null) {
-            view.setError("Login fehlgeschlagen! Benutzer oder Passwort falsch.");
-            view.clearPassword();
-        } else {
-            if (user.getRole().equalsIgnoreCase("admin")) {
-                AdminViewFX adminView = new AdminViewFX();
-                new AdminControllerFX(adminView, stage);
-                stage.setScene(new Scene(adminView, 800, 600));
-                stage.setTitle("Admin-Modus – SchulManager");
-                stage.show();
-            } else {
-                MainViewFX mainView = new MainViewFX(user);
-                new MainControllerFX(mainView, user);
-                stage.setScene(new Scene(mainView, 800, 600));
-                stage.setTitle("SchulManager – " + user.getUsername());
-                stage.show();
+        try {
+            if (!CsvManager.userExists(username)) {
+                showError("Benutzer existiert nicht.");
+                return;
             }
+            if (!CsvManager.isPasswordCorrect(username, password)) {
+                showError("Falsches Passwort.");
+                return;
+            }
+
+            new MainViewFX(new Stage(), username);
+            view.getStage().close();
+
+        } catch (IOException ex) {
+            showError("Fehler beim Laden der Benutzerdaten.");
         }
+    }
+
+    private void handleRegistration(ActionEvent e) {
+        String username = view.getUsernameField().getText().trim();
+        String password = view.getPasswordField().getText().trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            showError("Bitte alle Felder ausfüllen.");
+            return;
+        }
+        if (username.equalsIgnoreCase("admin")) {
+            showError("Der Benutzername 'admin' ist reserviert.");
+            return;
+        }
+
+        try {
+            if (CsvManager.userExists(username)) {
+                showError("Benutzername bereits vergeben.");
+                return;
+            }
+
+            CsvManager.saveUser(username, password, "user");
+            new MainViewFX(new Stage(), username);
+            view.getStage().close();
+
+        } catch (IOException ex) {
+            showError("Fehler beim Speichern des Benutzers.");
+        }
+    }
+
+    private void showError(String message) {
+        Label errorLabel = view.getErrorLabel();
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
     }
 }

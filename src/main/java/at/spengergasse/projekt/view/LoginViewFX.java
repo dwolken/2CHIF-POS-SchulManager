@@ -1,98 +1,91 @@
 package at.spengergasse.projekt.view;
 
+import at.spengergasse.projekt.controller.LoginControllerFX;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import java.io.File;
+import java.net.URL;
 
 /**
- * LoginViewFX ist die GUI-Komponente für den Login-Bereich.
- * Sie enthält Eingabefelder für Benutzername und Passwort sowie Buttons für Login und Registrierung.
+ * Diese Klasse stellt das Login- und Registrierungsfenster dar.
+ * Sie erlaubt das Anmelden eines bestehenden Benutzers oder das Erstellen eines neuen Accounts.
  */
-public class LoginViewFX extends BorderPane {
+public class LoginViewFX {
 
-    private final TextField usernameField;
-    private final PasswordField passwordField;
-    private final Button loginButton;
-    private final Button registerButton;
-    private final Label errorLabel;
+    private final LoginControllerFX controller;
+    private Label errorLabel;
+    private TextField usernameField;
+    private PasswordField passwordField;
+    private final Stage stage;
+    private Button loginButton;
+    private Button registerButton;
 
     /**
-     * Konstruktor erstellt die Login-Oberfläche.
+     * Konstruktor, der das Login-Fenster mit zugehörigem Controller initialisiert.
+     * @param primaryStage Hauptfenster der Anwendung
      */
-    public LoginViewFX() {
+    public LoginViewFX(Stage primaryStage) {
+        this.stage = primaryStage;
+        this.usernameField = new TextField();
+        this.passwordField = new PasswordField();
+        this.errorLabel = new Label();
+        this.loginButton = new Button("Login");
+        this.registerButton = new Button("Registrieren");
+
+        this.controller = new LoginControllerFX(this, primaryStage);
+        createLoginScene();
+    }
+
+    /**
+     * Erstellt die Login-Ansicht mit Formularen für Anmeldung und Registrierung.
+     */
+    private void createLoginScene() {
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(30));
+        root.setAlignment(Pos.CENTER);
+        root.getStyleClass().add("login-root");
+
         Label title = new Label("SchulManager Login");
-        title.setFont(new Font("Arial", 24));
+        title.getStyleClass().add("login-title");
 
-        usernameField = new TextField();
         usernameField.setPromptText("Benutzername");
-
-        passwordField = new PasswordField();
         passwordField.setPromptText("Passwort");
+        errorLabel.getStyleClass().add("error-label");
+        errorLabel.setVisible(false);
 
-        loginButton = new Button("Login");
-        registerButton = new Button("Registrieren");
+        // Info: Wo werden die Dateien gespeichert?
+        String standardPfad = System.getProperty("user.home") + File.separator + "SchulManager" + File.separator + "data";
+        Label pfadLabel = new Label("Standard-Speicherpfad: " + standardPfad);
+        pfadLabel.setWrapText(true);
+        pfadLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: gray;");
 
-        errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: red");
+        HBox buttons = new HBox(10, loginButton, registerButton);
+        buttons.setAlignment(Pos.CENTER);
 
-        VBox centerBox = new VBox(10);
-        centerBox.setPadding(new Insets(30));
-        centerBox.setAlignment(Pos.CENTER);
-        centerBox.getChildren().addAll(title, usernameField, passwordField, loginButton, registerButton, errorLabel);
+        root.getChildren().addAll(title, usernameField, passwordField, errorLabel, buttons, pfadLabel);
 
-        this.setCenter(centerBox);
+        Scene scene = new Scene(root, 420, 380);
+        URL css = getClass().getResource("/styles.css");
+        if (css != null) {
+            scene.getStylesheets().add(css.toExternalForm());
+        }
+
+        stage.setTitle("SchulManager - Login");
+        stage.setScene(scene);
+        stage.show();
+
+        controller.setupEventHandling(scene);
     }
 
-    /**
-     * Gibt den eingegebenen Benutzernamen zurück.
-     */
-    public String getUsername() {
-        return usernameField.getText();
-    }
-
-    /**
-     * Gibt das eingegebene Passwort zurück.
-     */
-    public String getPassword() {
-        return passwordField.getText();
-    }
-
-    /**
-     * Gibt Zugriff auf den Login-Button.
-     */
-    public Button getLoginButton() {
-        return loginButton;
-    }
-
-    /**
-     * Gibt Zugriff auf den Registrieren-Button.
-     */
-    public Button getRegisterButton() {
-        return registerButton;
-    }
-
-    /**
-     * Setzt eine Fehlermeldung im Fehler-Label.
-     *
-     * @param msg die anzuzeigende Nachricht
-     */
-    public void setError(String msg) {
-        errorLabel.setText(msg);
-    }
-
-    /**
-     * Löscht das Passwortfeld.
-     */
-    public void clearPassword() {
-        passwordField.clear();
-    }
-
-    /**
-     * Leert die Fehlermeldung.
-     */
-    public void clearError() {
-        errorLabel.setText("");
-    }
+    // Getter für Controller-Zugriff
+    public TextField getUsernameField() { return usernameField; }
+    public PasswordField getPasswordField() { return passwordField; }
+    public Label getErrorLabel() { return errorLabel; }
+    public Stage getStage() { return stage; }
+    public Button getLoginButton() { return loginButton; }
+    public Button getRegisterButton() { return registerButton; }
 }

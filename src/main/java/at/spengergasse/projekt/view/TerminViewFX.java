@@ -1,114 +1,35 @@
 package at.spengergasse.projekt.view;
 
-import at.spengergasse.projekt.model.Termin;
-import javafx.beans.property.ReadOnlyStringWrapper;
+import at.spengergasse.projekt.controller.TerminControllerFX;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 
 /**
- * GUI-Komponente für die Terminansicht.
- * Zeigt Tabelle + Formular zur Eingabe/Bearbeitung.
+ * View für die Anzeige und Verwaltung von Terminen in Tabellenform.
+ * Beinhaltet Formular zum Hinzufügen, Tabelle mit Bearbeitungsmöglichkeit und Löschfunktion.
  */
 public class TerminViewFX extends VBox {
 
-    private final TableView<Termin> terminTable;
-    private final TextField titelField;
-    private final DatePicker datumPicker;
-    private final ComboBox<String> artBox;
-    private final TextField notizField;
-    private final Button speichernButton;
-    private final Button löschenButton;
+    private final TerminControllerFX controller;
 
     /**
-     * Erstellt das GUI für die Terminverwaltung.
+     * Konstruktor für die Terminansicht.
+     * @param username Aktuell eingeloggter Benutzer
+     * @param pfad Speicherpfad für die CSV-Datei
      */
-    public TerminViewFX() {
-        setPadding(new Insets(20));
-        setSpacing(10);
+    public TerminViewFX(String username, String pfad) {
+        this.controller = new TerminControllerFX(username, pfad);
 
-        terminTable = new TableView<>();
-        terminTable.setEditable(true);
-        terminTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        this.setSpacing(15);
+        this.setPadding(new Insets(20));
+        this.getStyleClass().add("termin-view");
 
-        TableColumn<Termin, String> titelCol = new TableColumn<>("Titel");
-        titelCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getFach()));
+        TableView table = controller.getTable();
+        HBox formular = controller.getFormular();
+        HBox buttons = controller.getAktionen();
 
-        TableColumn<Termin, String> datumCol = new TableColumn<>("Datum");
-        datumCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
-                data.getValue().getDatum() != null ? data.getValue().getDatum().toString() : ""));
-
-        TableColumn<Termin, String> artCol = new TableColumn<>("Art");
-        artCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getTyp()));
-
-        TableColumn<Termin, String> notizCol = new TableColumn<>("Notiz");
-        notizCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getNotiz()));
-        notizCol.setEditable(true);
-
-        terminTable.getColumns().addAll(titelCol, datumCol, artCol, notizCol);
-
-        titelField = new TextField();
-        titelField.setPromptText("Titel");
-
-        datumPicker = new DatePicker();
-        datumPicker.setPrefWidth(120);
-
-        artBox = new ComboBox<>();
-        artBox.getItems().addAll("Prüfung", "Hausaufgabe", "Event", "Sonstiges");
-        artBox.setPromptText("Art");
-        artBox.setPrefWidth(100);
-
-        notizField = new TextField();
-        notizField.setPromptText("Notiz (optional)");
-
-        speichernButton = new Button("Speichern");
-        löschenButton = new Button("Löschen");
-        löschenButton.setDisable(true);
-
-        HBox inputBox = new HBox(10, titelField, datumPicker, artBox, notizField, speichernButton, löschenButton);
-        inputBox.setAlignment(Pos.CENTER);
-
-        getChildren().addAll(terminTable, inputBox);
-    }
-
-    public TableView<Termin> getTerminTable() {
-        return terminTable;
-    }
-
-    public TextField getTitelField() {
-        return titelField;
-    }
-
-    public DatePicker getDatumPicker() {
-        return datumPicker;
-    }
-
-    public ComboBox<String> getArtBox() {
-        return artBox;
-    }
-
-    public TextField getNotizField() {
-        return notizField;
-    }
-
-    public Button getSpeichernButton() {
-        return speichernButton;
-    }
-
-    public Button getLöschenButton() {
-        return löschenButton;
-    }
-
-    /**
-     * Leert alle Eingabefelder und deaktiviert Löschen.
-     */
-    public void clearFields() {
-        titelField.clear();
-        datumPicker.setValue(null);
-        artBox.setValue(null);
-        notizField.clear();
-        löschenButton.setDisable(true);
+        this.getChildren().addAll(table, formular, buttons);
     }
 }

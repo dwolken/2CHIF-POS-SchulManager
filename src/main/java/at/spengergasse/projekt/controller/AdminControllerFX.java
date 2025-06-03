@@ -1,114 +1,125 @@
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.CsvManager;
-import at.spengergasse.projekt.model.Encoding;
-import at.spengergasse.projekt.model.Encoding.EncodingType;
-import at.spengergasse.projekt.model.EncodingException;
-import at.spengergasse.projekt.model.User;
-import at.spengergasse.projekt.view.AdminViewFX;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.scene.control.TextInputDialog;
-import javafx.stage.Stage;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Controller für die Admin-Oberfläche.
- * Ermöglicht Benutzerverwaltung (anzeigen, löschen, ändern, neu anlegen).
+ * Controller für Adminfunktionen: Benutzer anzeigen, bearbeiten und löschen.
  */
 public class AdminControllerFX {
 
-    private final AdminViewFX view;
-    private final ObservableList<User> users;
+    private final TableView<String[]> table;
+    private final ObservableList<String[]> daten;
 
     /**
-     * Konstruktor des AdminControllers.
-     *
-     * @param view  die AdminView
-     * @param stage das Hauptfenster
+     * Initialisiert Controller und lädt Benutzerdaten.
      */
-    public AdminControllerFX(AdminViewFX view, Stage stage) {
-        this.view = view;
-        this.users = FXCollections.observableArrayList(CsvManager.loadUsers());
+    public AdminControllerFX() {
+        daten = FXCollections.observableArrayList();
+        table = new TableView<>(daten);
+        table.setPlaceholder(new Label("Keine Benutzer gefunden."));
+        loadBenutzer();
 
-        view.setUserList(users);
+        TableColumn<String[], String> nameCol = new TableColumn<>("Benutzername");
+        nameCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue()[0]));
 
-        view.getDeleteButton().setOnAction(this::handleDelete);
-        view.getRenameButton().setOnAction(this::handleRename);
-        view.getChangePasswordButton().setOnAction(this::handleChangePassword);
-        view.getAddButton().setOnAction(this::handleAddUser);
+        TableColumn<String[], String> rolleCol = new TableColumn<>("Rolle");
+        rolleCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue()[1]));
+
+        table.getColumns().addAll(nameCol, rolleCol);
+        table.setPrefHeight(300);
     }
 
-    private void handleDelete(ActionEvent event) {
-        User selected = view.getSelectedUser();
-        if (selected != null && !"admin".equalsIgnoreCase(selected.getUsername())) {
-            CsvManager.deleteUser(selected.getUsername());
-            users.setAll(CsvManager.loadUsers());
-        } else {
-            view.setError("Admin-Konto kann nicht gelöscht werden.");
-        }
+    /**
+     * Gibt die Benutzer-Tabelle zurück.
+     */
+    public TableView<String[]> getUserTable() {
+        return table;
     }
 
-    private void handleRename(ActionEvent event) {
-        User selected = view.getSelectedUser();
-        if (selected == null) return;
-
-        TextInputDialog dialog = new TextInputDialog(selected.getUsername());
-        dialog.setHeaderText("Neuen Benutzernamen eingeben:");
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(newName -> {
-            if (!newName.trim().isEmpty()) {
-                CsvManager.changeUsername(selected.getUsername(), newName.trim());
-                users.setAll(CsvManager.loadUsers());
-            }
-        });
+    /**
+     * Aktionen wie Löschen und Bearbeiten
+     */
+    public HBox getAktionen() {
+        Button löschenButton = new Button("Löschen");
+        löschenButton.setOnAction(e -> handleLöschen());
+        HBox box = new HBox(10, löschenButton);
+        box.setPadding(new Insets(10));
+        return box;
     }
 
-    private void handleChangePassword(ActionEvent event) {
-        User selected = view.getSelectedUser();
-        if (selected == null) return;
+    /**
+     * Formular zur Neuanlage eines Benutzers
+     */
+    public VBox getNeuesBenutzerFormular() {
+        TextField nameField = new TextField();
+        nameField.setPromptText("Benutzername");
+        PasswordField pwField = new PasswordField();
+        pwField.setPromptText("Passwort");
 
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setHeaderText("Neues Passwort eingeben:");
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(pass -> {
-            if (!pass.trim().isEmpty()) {
+        Button anlegenButton = new Button("Benutzer anlegen");
+        anlegenButton.setOnAction(e -> {
+            String name = nameField.getText().trim();
+            String pw = pwField.getText().trim();
+            if (!name.isEmpty() && !pw.isEmpty()) {
                 try {
-                    String hashed = new Encoding(pass.trim(), EncodingType.SHA256).bytesToHex();
-                    CsvManager.changePassword(selected.getUsername(), hashed);
-                    users.setAll(CsvManager.loadUsers());
-                } catch (NoSuchAlgorithmException | EncodingException e) {
-                    view.setError("Fehler beim Verschlüsseln.");
+                    CsvManager.saveUser(name, pw, "user");
+                    loadBenutzer();
+                    nameField.clear();
+                    pwField.clear();
+                } catch (IOException ex) {
+                    showFehler("Fehler beim Speichern.");
                 }
             }
         });
+
+        VBox form = new VBox(8, new Label("Neuen Benutzer erstellen:"), nameField, pwField, anlegenButton);
+        form.setPadding(new Insets(10));
+        return form;
     }
 
+    private void handleLöschen() {
+        String[] selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
 
-    private void handleAddUser(ActionEvent event) {
-        TextInputDialog userDialog = new TextInputDialog();
-        userDialog.setHeaderText("Benutzernamen für neuen User eingeben:");
-        Optional<String> username = userDialog.showAndWait();
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Löschen bestätigen");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Benutzer '" + selected[0] + "' wirklich löschen?");
 
-        if (username.isEmpty() || username.get().trim().isEmpty()) return;
-
-        TextInputDialog passDialog = new TextInputDialog();
-        passDialog.setHeaderText("Passwort für neuen User eingeben:");
-        Optional<String> password = passDialog.showAndWait();
-
-        if (password.isEmpty() || password.get().trim().isEmpty()) return;
-
-        try {
-            String hashed = new Encoding(password.get(), EncodingType.SHA256).bytesToHex();
-            CsvManager.addUser(username.get().trim(), "user", hashed);
-            users.setAll(CsvManager.loadUsers());
-        } catch (Exception e) {
-            view.setError("Fehler beim Anlegen des Benutzers.");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                CsvManager.deleteUser(selected[0]);
+                loadBenutzer();
+            } catch (IOException e) {
+                showFehler("Fehler beim Löschen.");
+            }
         }
+    }
+
+    private void loadBenutzer() {
+        try {
+            daten.setAll(CsvManager.loadBenutzer());
+        } catch (IOException e) {
+            showFehler("Fehler beim Laden der Benutzer.");
+        }
+    }
+
+    private void showFehler(String msg) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle("Fehler");
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
     }
 }

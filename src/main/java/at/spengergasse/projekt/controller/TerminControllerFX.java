@@ -1,117 +1,170 @@
 package at.spengergasse.projekt.controller;
 
-import at.spengergasse.projekt.model.CsvManager;
 import at.spengergasse.projekt.model.Termin;
-import at.spengergasse.projekt.model.User;
-import at.spengergasse.projekt.view.TerminViewFX;
+import at.spengergasse.projekt.model.CsvManager;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.HBox;
+import javafx.util.StringConverter;
 
+import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Optional;
 
 /**
- * Controller für die Terminansicht.
- * Verwaltet das Bearbeiten, Speichern und Löschen von Terminen.
+ * Controller zur Verwaltung von Terminen, inklusive Anzeige, Hinzufügen, Löschen und Editieren.
  */
 public class TerminControllerFX {
 
-    private final TerminViewFX view;
-    private final User user;
+    private final String username;
+    private String pfad;
+    private final TableView<Termin> table;
+    private final ObservableList<Termin> termine;
+
+    private final TextField titelField = new TextField();
+    private final DatePicker datumPicker = new DatePicker();
+    private final ComboBox<String> artBox = new ComboBox<>();
+    private final TextField notizField = new TextField();
+    private final Button speichernButton = new Button("Speichern");
+    private final Button löschenButton = new Button("Löschen");
 
     /**
-     * Konstruktor des TerminControllers.
-     *
-     * @param view die View-Komponente
-     * @param user aktuell eingeloggter Benutzer
+     * Erstellt Controller für Terminverwaltung eines bestimmten Benutzers.
+     * @param username Benutzername
+     * @param pfad Pfad zur CSV-Datei
      */
-    public TerminControllerFX(TerminViewFX view, User user) {
-        this.view = view;
-        this.user = user;
+    public TerminControllerFX(String username, String pfad) {
+        this.username = username;
+        this.pfad = pfad;
+        this.termine = FXCollections.observableArrayList();
+        this.table = createTable();
+        loadTermine();
+    }
 
-        List<Termin> termine = CsvManager.loadTermine(user.getUsername());
-        view.getTerminTable().setItems(FXCollections.observableArrayList(termine));
+    public TableView<Termin> getTable() {
+        return table;
+    }
 
-        view.getSpeichernButton().setOnAction(this::handleSpeichern);
-        view.getLöschenButton().setOnAction(this::handleLöschen);
+    public HBox getFormular() {
+        titelField.setPromptText("Titel");
+        datumPicker.setPromptText("Datum");
+        artBox.getItems().addAll("Prüfung", "Hausaufgabe", "Event", "Sonstiges");
+        artBox.setPromptText("Art");
+        notizField.setPromptText("Notiz");
 
-        // Auswahl beobachten
-        view.getTerminTable().getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
-            if (selected != null) {
-                view.getTitelField().setText(selected.getFach());
-                view.getDatumPicker().setValue(selected.getDatum());
-                view.getArtBox().setValue(selected.getTyp());
-                view.getNotizField().setText(selected.getNotiz());
-                view.getLöschenButton().setDisable(false);
-            } else {
-                view.clearFields();
+        titelField.setPrefWidth(120);
+        datumPicker.setPrefWidth(120);
+        artBox.setPrefWidth(110);
+        notizField.setPrefWidth(150);
+        speichernButton.setPrefWidth(100);
+
+        speichernButton.setOnAction(e -> handleSpeichern());
+
+        HBox box = new HBox(10, titelField, datumPicker, artBox, notizField, speichernButton);
+        box.setPadding(new Insets(10));
+        return box;
+    }
+
+    public HBox getAktionen() {
+        löschenButton.setDisable(true);
+        löschenButton.setOnAction(e -> handleLöschen());
+
+        table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            löschenButton.setDisable(newVal == null);
+        });
+
+        HBox box = new HBox(10, löschenButton);
+        box.setPadding(new Insets(10));
+        return box;
+    }
+
+    private TableView<Termin> createTable() {
+        TableView<Termin> table = new TableView<>(termine);
+        table.setEditable(true);
+
+        TableColumn<Termin, String> titelCol = new TableColumn<>("Titel");
+        titelCol.setCellValueFactory(data -> data.getValue().titelProperty());
+
+        TableColumn<Termin, LocalDate> datumCol = new TableColumn<>("Datum");
+        datumCol.setCellValueFactory(data -> data.getValue().datumProperty());
+
+        TableColumn<Termin, String> artCol = new TableColumn<>("Art");
+        artCol.setCellValueFactory(data -> data.getValue().artProperty());
+
+        TableColumn<Termin, String> notizCol = new TableColumn<>("Notiz");
+        notizCol.setCellValueFactory(data -> data.getValue().notizProperty());
+        notizCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        notizCol.setOnEditCommit(e -> {
+            Termin t = e.getRowValue();
+            t.setNotiz(e.getNewValue());
+            saveTermine();
+        });
+
+        table.getColumns().addAll(titelCol, datumCol, artCol, notizCol);
+        table.setPrefHeight(300);
+
+        table.setOnMouseClicked(e -> {
+            if (table.getSelectionModel().getSelectedItem() == null) {
+                löschenButton.setDisable(true);
             }
         });
 
-        // Leere Zeile -> Auswahl löschen
-        view.getTerminTable().setRowFactory(tv -> {
-            TableRow<Termin> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (row.isEmpty()) {
-                    view.getTerminTable().getSelectionModel().clearSelection();
-                    view.clearFields();
-                }
-            });
-            return row;
-        });
-
-        // Notiz editierbar machen + speichern
-        @SuppressWarnings("unchecked")
-        TableColumn<Termin, String> notizCol = (TableColumn<Termin, String>) view.getTerminTable().getColumns().get(3);
-        notizCol.setOnEditCommit((TableColumn.CellEditEvent<Termin, String> e) -> {
-            e.getRowValue().setNotiz(e.getNewValue());
-            CsvManager.saveTermine(user.getUsername(), view.getTerminTable().getItems());
-        });
+        return table;
     }
 
-    /**
-     * Speichert neuen oder bearbeiteten Termin.
-     */
-    private void handleSpeichern(ActionEvent e) {
-        String titel = view.getTitelField().getText().trim();
-        LocalDate datum = view.getDatumPicker().getValue();
-        String art = view.getArtBox().getValue();
-        String notiz = view.getNotizField().getText().trim();
+    private void handleSpeichern() {
+        String titel = titelField.getText().trim();
+        LocalDate datum = datumPicker.getValue();
+        String art = artBox.getValue();
+        String notiz = notizField.getText().trim();
 
         if (titel.isEmpty() || datum == null || art == null) {
-            new Alert(Alert.AlertType.WARNING, "Bitte Titel, Datum und Art angeben!").showAndWait();
+            showFehler("Bitte füllen Sie alle Pflichtfelder aus.");
             return;
         }
 
-        Termin selected = view.getTerminTable().getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            Termin neu = new Termin(titel, datum, art, notiz);
-            view.getTerminTable().getItems().add(neu);
-        } else {
-            selected.setFach(titel);
-            selected.setDatum(datum);
-            selected.setTyp(art);
-            selected.setNotiz(notiz);
-            view.getTerminTable().refresh();
-        }
+        Termin neu = new Termin(titel, datum, art, notiz);
+        termine.add(neu);
+        saveTermine();
 
-        CsvManager.saveTermine(user.getUsername(), view.getTerminTable().getItems());
-        view.clearFields();
-        view.getTerminTable().getSelectionModel().clearSelection();
+        titelField.clear();
+        datumPicker.setValue(null);
+        artBox.setValue(null);
+        notizField.clear();
     }
 
-    /**
-     * Löscht den ausgewählten Termin.
-     */
-    private void handleLöschen(ActionEvent e) {
-        Termin selected = view.getTerminTable().getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            view.getTerminTable().getItems().remove(selected);
-            CsvManager.saveTermine(user.getUsername(), view.getTerminTable().getItems());
-            view.clearFields();
+    private void handleLöschen() {
+        Termin ausgewählt = table.getSelectionModel().getSelectedItem();
+        if (ausgewählt != null) {
+            termine.remove(ausgewählt);
+            saveTermine();
         }
+    }
+
+    private void loadTermine() {
+        try {
+            termine.setAll(CsvManager.loadTermine(pfad));
+        } catch (IOException e) {
+            showFehler("Fehler beim Laden der Termine.");
+        }
+    }
+
+    private void saveTermine() {
+        try {
+            CsvManager.saveTermine(termine, pfad);
+        } catch (IOException e) {
+            showFehler("Fehler beim Speichern der Termine.");
+        }
+    }
+
+    private void showFehler(String msg) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Fehler");
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
     }
 }

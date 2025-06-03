@@ -3,236 +3,79 @@ package at.spengergasse.projekt.model;
 import java.io.*;
 import java.nio.file.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * Verwaltet Benutzer- und Termindaten im Dateisystem.
- * Passwörter werden verschlüsselt gespeichert.
+ * Statische Hilfsklasse zur Datei-Verarbeitung für Benutzer- und Termindaten.
  */
 public class CsvManager {
 
-    private static Path BASE_DIR = Paths.get(System.getProperty("user.home"), "SchulManager", "data");
-    private static final Path USER_FILE = Paths.get("data", "benutzer.csv");
+    private static final String BENUTZER_PFAD = "data/benutzer.csv";
 
-    /**
-     * Setzt das Verzeichnis zur Speicherung von Daten.
-     * @param newBaseDir neues Verzeichnis
-     */
-    public static void setBaseDir(Path newBaseDir) {
-        BASE_DIR = newBaseDir;
+    public static boolean userExists(String name) throws IOException {
+        return Files.exists(Paths.get(BENUTZER_PFAD)) &&
+                Files.lines(Paths.get(BENUTZER_PFAD)).anyMatch(line -> line.startsWith(name + ";"));
     }
 
-    // ---------------- BENUTZER ----------------
+    public static boolean isPasswordCorrect(String name, String plainPassword) throws IOException {
+        return Files.lines(Paths.get(BENUTZER_PFAD))
+                .filter(line -> line.startsWith(name + ";"))
+                .map(line -> line.split(";"))
+                .anyMatch(parts -> parts.length == 3 &&
+                        encodeString(plainPassword).equals(parts[2]));
+    }
 
-    /**
-     * Prüft, ob ein Benutzer bereits existiert.
-     * @param username Benutzername
-     * @return true wenn vorhanden
-     */
-    public static boolean userExists(String username) {
-        if (!Files.exists(USER_FILE)) return false;
-        try (BufferedReader reader = Files.newBufferedReader(USER_FILE)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(";");
-                if (parts.length >= 1 && parts[0].equals(username)) {
-                    return true;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
+    public static void saveUser(String name, String password, String rolle) throws IOException {
+        String zeile = name + ";" + rolle + ";" + encodeString(password);
+        Files.write(Paths.get(BENUTZER_PFAD), (zeile + System.lineSeparator()).getBytes(),
+                StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    }
+
+    public static List<String[]> loadBenutzer() throws IOException {
+        if (!Files.exists(Paths.get(BENUTZER_PFAD))) return new ArrayList<>();
+        return Files.lines(Paths.get(BENUTZER_PFAD))
+                .map(l -> l.split(";"))
+                .filter(p -> p.length >= 2)
+                .collect(Collectors.toList());
+    }
+
+    public static void deleteUser(String name) throws IOException {
+        if (!Files.exists(Paths.get(BENUTZER_PFAD))) return;
+        List<String> lines = Files.readAllLines(Paths.get(BENUTZER_PFAD));
+        List<String> filtered = lines.stream()
+                .filter(l -> !l.startsWith(name + ";"))
+                .toList();
+        Files.write(Paths.get(BENUTZER_PFAD), filtered);
+    }
+
+    public static List<Termin> loadTermine(String pfad) throws IOException {
+        if (!Files.exists(Paths.get(pfad))) return new ArrayList<>();
+        return Files.lines(Paths.get(pfad))
+                .map(line -> line.split(";"))
+                .filter(p -> p.length == 4)
+                .map(p -> new Termin(p[0], LocalDate.parse(p[1]), p[2], p[3]))
+                .collect(Collectors.toList());
+    }
+
+    public static void saveTermine(List<Termin> termine, String pfad) throws IOException {
+        List<String> lines = termine.stream()
+                .map(t -> t.getTitel() + ";" + t.getDatum() + ";" + t.getArt() + ";" + t.getNotiz())
+                .toList();
+        Files.write(Paths.get(pfad), lines);
     }
 
     /**
-     * Registriert einen neuen Benutzer mit verschlüsseltem Passwort.
-     * @param username Benutzername
-     * @param role Rolle (user/admin)
-     * @param password Klartextpasswort
-     * @return true bei Erfolg
+     * Kodiert einen String mit SHA-256 über die Encoding-Klasse.
+     * @param input Der Eingabestring
+     * @return Der Hash als hex-String
      */
-    public static boolean registerUser(String username, String role, String password) {
+    public static String encodeString(String input) {
         try {
-            if (userExists(username)) return false;
-            ensureDirectory();
-            String hashed = new Encoding(password, Encoding.EncodingType.SHA256).bytesToHex();
-            try (BufferedWriter writer = Files.newBufferedWriter(USER_FILE, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
-                writer.write(username + ";" + role + ";" + hashed);
-                writer.newLine();
-                return true;
-            }
+            Encoding enc = new Encoding(input, Encoding.EncodingType.SHA256);
+            return enc.bytesToHex();
         } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            return "ERROR";
         }
     }
-
-    /**
-     * Prüft Benutzer-Login mit Hash-Vergleich.
-     * @param username Benutzername
-     * @param password Passwort
-     * @return User-Objekt oder null bei Fehlschlag
-     */
-    public static User validateLogin(String username, String password) {
-        if (!Files.exists(USER_FILE)) return null;
-        try (BufferedReader reader = Files.newBufferedReader(USER_FILE)) {
-            String line;
-            String hashedInput = new Encoding(password, Encoding.EncodingType.SHA256).bytesToHex();
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(";");
-                if (parts.length == 3 && parts[0].equals(username) && parts[2].equals(hashedInput)) {
-                    return new User(parts[0], parts[1], parts[2]);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * Gibt alle Benutzer zurück.
-     * @return Liste von Benutzern
-     */
-    public static List<User> loadUsers() {
-        List<User> users = new ArrayList<>();
-        if (!Files.exists(USER_FILE)) return users;
-        try (BufferedReader reader = Files.newBufferedReader(USER_FILE)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(";");
-                if (parts.length == 3) {
-                    users.add(new User(parts[0], parts[1], parts[2]));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return users;
-    }
-
-    /**
-     * Speichert alle Benutzer (z. B. nach Änderung).
-     * @param users Liste
-     */
-    private static void saveAllUsers(List<User> users) {
-        ensureDirectory();
-        try (BufferedWriter writer = Files.newBufferedWriter(USER_FILE)) {
-            for (User u : users) {
-                writer.write(u.getUsername() + ";" + u.getRole() + ";" + u.getPassword());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void deleteUser(String username) {
-        List<User> users = loadUsers();
-        users.removeIf(u -> u.getUsername().equals(username));
-        saveAllUsers(users);
-    }
-
-    public static void changeUsername(String oldUsername, String newUsername) {
-        List<User> users = loadUsers();
-        for (User user : users) {
-            if (user.getUsername().equals(oldUsername)) {
-                user.setUsername(newUsername);
-                break;
-            }
-        }
-        saveAllUsers(users);
-    }
-
-    public static void changePassword(String username, String newPassword) {
-        List<User> users = loadUsers();
-        for (User user : users) {
-            if (user.getUsername().equals(username)) {
-                try {
-                    user.setPassword(new Encoding(newPassword, Encoding.EncodingType.SHA256).bytesToHex());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
-        }
-        saveAllUsers(users);
-    }
-
-    public static void addUser(String username, String role, String password) {
-        try {
-            List<User> users = loadUsers();
-            String hash = new Encoding(password, Encoding.EncodingType.SHA256).bytesToHex();
-            users.add(new User(username, role, hash));
-            saveAllUsers(users);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // ---------------- TERMINE ----------------
-
-    public static List<Termin> loadTermine(String username) {
-        List<Termin> termine = new ArrayList<>();
-        Path path = BASE_DIR.resolve("termine_" + username + ".csv");
-        if (!Files.exists(path)) return termine;
-        try (BufferedReader reader = Files.newBufferedReader(path)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(";", -1);
-                if (parts.length == 4) {
-                    String fach = parts[0];
-                    LocalDate datum = parts[1].isEmpty() ? null : LocalDate.parse(parts[1]);
-                    String typ = parts[2];
-                    String notiz = parts[3];
-                    termine.add(new Termin(fach, datum, typ, notiz));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return termine;
-    }
-
-    public static void saveTermine(String username, List<Termin> termine) {
-        ensureDirectory();
-        Path path = BASE_DIR.resolve("termine_" + username + ".csv");
-        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            for (Termin t : termine) {
-                writer.write(
-                        t.getFach() + ";" +
-                                (t.getDatum() != null ? t.getDatum().toString() : "") + ";" +
-                                t.getTyp() + ";" +
-                                t.getNotiz()
-                );
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Erstellt Datenordner, wenn nicht vorhanden.
-     */
-    private static void ensureDirectory() {
-        try {
-            if (!Files.exists(BASE_DIR)) {
-                Files.createDirectories(BASE_DIR);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Gibt das Basisverzeichnis für Daten zurück.
-     * @return
-     */
-    public static Path getBaseDir() {
-        return BASE_DIR;
-    }
-
 }

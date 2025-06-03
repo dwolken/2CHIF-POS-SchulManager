@@ -1,0 +1,78 @@
+/* === Allgemeine Layouts === */
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #f8f8f8;
+}
+
+/* === Login-Ansicht === */
+.login-root {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1;
+    -fx-border-radius: 6;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+}
+
+.login-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.error-label {
+    -fx-text-fill: red;
+    -fx-font-style: italic;
+}
+
+/* === Buttons === */
+.button {
+    -fx-background-color: #2d89ef;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.button:hover {
+    -fx-background-color: #1c6cd5;
+}
+
+/* === TerminView & Tabelle === */
+.termin-view {
+    -fx-background-color: #ffffff;
+}
+
+.table-view {
+    -fx-border-color: #ddd;
+    -fx-background-color: #fcfcfc;
+}
+
+.table-view .column-header {
+    -fx-font-weight: bold;
+    -fx-background-color: #eeeeee;
+}
+
+/* === Footer === */
+.footer {
+    -fx-background-color: #eeeeee;
+    -fx-padding: 10;
+    -fx-border-color: #cccccc;
+    -fx-border-width: 1 0 0 0;
+}
+
+/* === Ziele === */
+.list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cccccc;
+}
+
+.check-box {
+    -fx-padding: 5 0 5 5;
+}
+
+/* === Menüleiste === */
+.menu-bar {
+    -fx-background-color: #dddddd;
+}
