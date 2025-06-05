@@ -5,23 +5,20 @@ import at.spengergasse.projekt.model.CsvManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.HBox;
-import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Optional;
 
-/**
- * Controller zur Verwaltung von Terminen, inklusive Anzeige, Hinzufügen, Löschen und Editieren.
- */
 public class TerminControllerFX {
 
     private final String username;
-    private String pfad;
-    private final TableView<Termin> table;
+    private final String pfad;
+    private final TableView<Termin> tableView;
+    private final ScrollPane table;
     private final ObservableList<Termin> termine;
 
     private final TextField titelField = new TextField();
@@ -31,40 +28,31 @@ public class TerminControllerFX {
     private final Button speichernButton = new Button("Speichern");
     private final Button löschenButton = new Button("Löschen");
 
-    /**
-     * Erstellt Controller für Terminverwaltung eines bestimmten Benutzers.
-     * @param username Benutzername
-     * @param pfad Pfad zur CSV-Datei
-     */
     public TerminControllerFX(String username, String pfad) {
         this.username = username;
         this.pfad = pfad;
         this.termine = FXCollections.observableArrayList();
+        this.tableView = new TableView<>(termine);
         this.table = createTable();
         loadTermine();
     }
 
-    public TableView<Termin> getTable() {
+    public ScrollPane getTable() {
         return table;
     }
 
     public HBox getFormular() {
         titelField.setPromptText("Titel");
         datumPicker.setPromptText("Datum");
-        artBox.getItems().addAll("Prüfung", "Hausaufgabe", "Event", "Sonstiges");
+        artBox.getItems().setAll("Prüfung", "Hausaufgabe", "Event", "Sonstiges");
         artBox.setPromptText("Art");
         notizField.setPromptText("Notiz");
-
-        titelField.setPrefWidth(120);
-        datumPicker.setPrefWidth(120);
-        artBox.setPrefWidth(110);
-        notizField.setPrefWidth(150);
-        speichernButton.setPrefWidth(100);
 
         speichernButton.setOnAction(e -> handleSpeichern());
 
         HBox box = new HBox(10, titelField, datumPicker, artBox, notizField, speichernButton);
         box.setPadding(new Insets(10));
+        box.setAlignment(Pos.CENTER);
         return box;
     }
 
@@ -72,27 +60,47 @@ public class TerminControllerFX {
         löschenButton.setDisable(true);
         löschenButton.setOnAction(e -> handleLöschen());
 
-        table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             löschenButton.setDisable(newVal == null);
+        });
+
+        // RICHTIGE LÖSUNG: Auswahl löschen, wenn ins Leere geklickt wird
+        tableView.setRowFactory(tv -> {
+            TableRow<Termin> row = new TableRow<>();
+
+            row.setOnMouseClicked(event -> {
+                if (row.isEmpty()) {
+                    tableView.getSelectionModel().clearSelection();
+                    löschenButton.setDisable(true);
+                }
+            });
+
+            return row;
         });
 
         HBox box = new HBox(10, löschenButton);
         box.setPadding(new Insets(10));
+        box.setAlignment(Pos.CENTER);
         return box;
     }
 
-    private TableView<Termin> createTable() {
-        TableView<Termin> table = new TableView<>(termine);
-        table.setEditable(true);
+
+
+    private ScrollPane createTable() {
+        tableView.setEditable(true);
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Termin, String> titelCol = new TableColumn<>("Titel");
         titelCol.setCellValueFactory(data -> data.getValue().titelProperty());
+        titelCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<Termin, LocalDate> datumCol = new TableColumn<>("Datum");
         datumCol.setCellValueFactory(data -> data.getValue().datumProperty());
+        datumCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<Termin, String> artCol = new TableColumn<>("Art");
         artCol.setCellValueFactory(data -> data.getValue().artProperty());
+        artCol.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<Termin, String> notizCol = new TableColumn<>("Notiz");
         notizCol.setCellValueFactory(data -> data.getValue().notizProperty());
@@ -102,17 +110,21 @@ public class TerminControllerFX {
             t.setNotiz(e.getNewValue());
             saveTermine();
         });
+        notizCol.setStyle("-fx-alignment: CENTER;");
 
-        table.getColumns().addAll(titelCol, datumCol, artCol, notizCol);
-        table.setPrefHeight(300);
+        tableView.getColumns().addAll(titelCol, datumCol, artCol, notizCol);
+        tableView.setPrefHeight(300);
+        tableView.setMaxWidth(Double.MAX_VALUE);
 
-        table.setOnMouseClicked(e -> {
-            if (table.getSelectionModel().getSelectedItem() == null) {
-                löschenButton.setDisable(true);
-            }
-        });
 
-        return table;
+        ScrollPane scrollPane = new ScrollPane(tableView);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setPrefHeight(300);
+        scrollPane.setStyle("-fx-hbar-policy: never;");
+
+        return scrollPane;
     }
 
     private void handleSpeichern() {
@@ -137,7 +149,7 @@ public class TerminControllerFX {
     }
 
     private void handleLöschen() {
-        Termin ausgewählt = table.getSelectionModel().getSelectedItem();
+        Termin ausgewählt = tableView.getSelectionModel().getSelectedItem();
         if (ausgewählt != null) {
             termine.remove(ausgewählt);
             saveTermine();

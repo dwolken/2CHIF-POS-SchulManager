@@ -47,11 +47,18 @@
 .table-view {
     -fx-border-color: #ddd;
     -fx-background-color: #fcfcfc;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 0;
 }
 
 .table-view .column-header {
     -fx-font-weight: bold;
     -fx-background-color: #eeeeee;
+    -fx-alignment: CENTER;
+}
+
+.table-cell {
+    -fx-alignment: CENTER;
 }
 
 /* === Footer === */
@@ -75,4 +82,18 @@
 /* === Menüleiste === */
 .menu-bar {
     -fx-background-color: #dddddd;
+}
+
+.scroll-bar:vertical {
+    -fx-opacity: 0;
+    -fx-max-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-width: 0;
+}
+
+.scroll-bar:vertical {
+    -fx-opacity: 0;
+    -fx-max-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-width: 0;
 }
