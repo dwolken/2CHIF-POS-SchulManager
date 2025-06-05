@@ -1,9 +1,10 @@
 package at.spengergasse.projekt.view;
 
 import at.spengergasse.projekt.controller.TerminControllerFX;
+import at.spengergasse.projekt.model.Termin;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -19,7 +20,7 @@ public class TerminViewFX extends VBox {
         this.setAlignment(Pos.TOP_CENTER);
         this.getStyleClass().add("termin-view");
 
-        ScrollPane table = controller.getTable(); // Jetzt ScrollPane statt TableView
+        TableView<Termin> table = controller.getTable();
         VBox.setVgrow(table, Priority.ALWAYS);
 
         VBox formularBox = new VBox(controller.getFormular());
@@ -29,5 +30,9 @@ public class TerminViewFX extends VBox {
         buttonBox.setAlignment(Pos.CENTER);
 
         this.getChildren().addAll(table, formularBox, buttonBox);
+    }
+
+    public TableView<Termin> getTable() {
+        return controller.getTable();
     }
 }

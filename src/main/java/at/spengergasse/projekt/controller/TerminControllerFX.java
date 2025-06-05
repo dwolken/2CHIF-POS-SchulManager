@@ -18,7 +18,6 @@ public class TerminControllerFX {
     private final String username;
     private final String pfad;
     private final TableView<Termin> tableView;
-    private final ScrollPane table;
     private final ObservableList<Termin> termine;
 
     private final TextField titelField = new TextField();
@@ -32,13 +31,12 @@ public class TerminControllerFX {
         this.username = username;
         this.pfad = pfad;
         this.termine = FXCollections.observableArrayList();
-        this.tableView = new TableView<>(termine);
-        this.table = createTable();
+        this.tableView = createTable();
         loadTermine();
     }
 
-    public ScrollPane getTable() {
-        return table;
+    public TableView<Termin> getTable() {
+        return tableView;
     }
 
     public HBox getFormular() {
@@ -64,17 +62,14 @@ public class TerminControllerFX {
             löschenButton.setDisable(newVal == null);
         });
 
-        // RICHTIGE LÖSUNG: Auswahl löschen, wenn ins Leere geklickt wird
         tableView.setRowFactory(tv -> {
             TableRow<Termin> row = new TableRow<>();
-
             row.setOnMouseClicked(event -> {
                 if (row.isEmpty()) {
                     tableView.getSelectionModel().clearSelection();
                     löschenButton.setDisable(true);
                 }
             });
-
             return row;
         });
 
@@ -84,11 +79,10 @@ public class TerminControllerFX {
         return box;
     }
 
-
-
-    private ScrollPane createTable() {
-        tableView.setEditable(true);
-        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    private TableView<Termin> createTable() {
+        TableView<Termin> table = new TableView<>(termine);
+        table.setEditable(true);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Termin, String> titelCol = new TableColumn<>("Titel");
         titelCol.setCellValueFactory(data -> data.getValue().titelProperty());
@@ -112,19 +106,11 @@ public class TerminControllerFX {
         });
         notizCol.setStyle("-fx-alignment: CENTER;");
 
-        tableView.getColumns().addAll(titelCol, datumCol, artCol, notizCol);
-        tableView.setPrefHeight(300);
-        tableView.setMaxWidth(Double.MAX_VALUE);
+        table.getColumns().addAll(titelCol, datumCol, artCol, notizCol);
+        table.setPrefHeight(300);
+        table.setMaxWidth(Double.MAX_VALUE);
 
-
-        ScrollPane scrollPane = new ScrollPane(tableView);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setPrefHeight(300);
-        scrollPane.setStyle("-fx-hbar-policy: never;");
-
-        return scrollPane;
+        return table;
     }
 
     private void handleSpeichern() {
