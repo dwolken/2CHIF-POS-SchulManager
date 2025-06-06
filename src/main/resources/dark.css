@@ -1,34 +1,139 @@
+/* === Grundlayout === */
 .root {
     -fx-font-family: "Segoe UI", sans-serif;
     -fx-font-size: 14px;
     -fx-background-color: #1e1e1e;
-    -fx-text-fill: #eeeeee;
+    -fx-text-fill: #f0f0f0;
 }
 
-.label, .button, .menu, .menu-bar, .table-view, .list-view, .check-box {
-    -fx-text-fill: #eeeeee;
+/* === Allgemeine Textfarbe */
+.label, .text, .text-field, .text-area, .list-view, .combo-box, .combo-box-base {
+    -fx-text-fill: #f0f0f0;
 }
 
+/* === Menüleiste & Kontextmenü === */
+.menu-bar, .menu {
+    -fx-background-color: #2b2b2b;
+    -fx-border-color: #333;
+    -fx-text-fill: #f0f0f0;
+}
+
+.context-menu {
+    -fx-background-color: #2b2b2b;
+    -fx-text-fill: #f0f0f0;
+    -fx-border-color: #444444;
+}
+
+.menu-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f0f0f0;
+}
+
+.menu-item:hover, .menu-item:focused {
+    -fx-background-color: #3a3a3a;
+    -fx-text-fill: white;
+}
+
+.menu-item:disabled, .menu:disabled {
+    -fx-text-fill: #888888;
+}
+
+/* === Buttons === */
 .button {
     -fx-background-color: #444444;
-    -fx-text-fill: white;
+    -fx-text-fill: #ffffff;
+    -fx-border-radius: 4;
 }
 
 .button:hover {
     -fx-background-color: #666666;
 }
 
+/* === Navbar Buttons === */
+.nav-button {
+    -fx-background-color: #2f2f2f;
+    -fx-text-fill: #f0f0f0;
+    -fx-border-radius: 4;
+    -fx-padding: 6 12 6 12;
+    -fx-font-weight: bold;
+}
+
+.nav-button:hover {
+    -fx-background-color: #444444;
+    -fx-text-fill: white;
+}
+
+/* === Textfelder & Eingabe === */
+.text-field, .combo-box, .combo-box-base, .text-area {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: #f0f0f0;
+    -fx-border-color: #444;
+}
+
+/* === ListView (z.B. Ziel-Liste) === */
+.list-view {
+    -fx-background-color: #2a2a2a;
+    -fx-control-inner-background: #2a2a2a;
+    -fx-border-color: #444;
+    -fx-text-fill: #f0f0f0;
+}
+
+/* === ComboBox Dropdown === */
+.combo-box-popup .list-view {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #444;
+    -fx-border-width: 1;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: #f0f0f0;
+    -fx-border-color: #3a3a3a;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 6px;
+}
+
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #444;
+    -fx-text-fill: white;
+}
+
+/* === TableView === */
 .table-view {
     -fx-background-color: #2e2e2e;
     -fx-border-color: #444444;
+    -fx-table-cell-border-color: #444444;
+    -fx-text-background-color: #f0f0f0;
 }
 
 .table-view .column-header {
     -fx-background-color: #3a3a3a;
     -fx-text-fill: #ffffff;
+    -fx-border-color: #555;
 }
 
+.table-row-cell {
+    -fx-background-color: #2e2e2e;
+    -fx-text-fill: #f0f0f0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #555555;
+    -fx-text-fill: white;
+}
+
+/* === Footer / Statusleiste === */
 .footer {
     -fx-background-color: #2a2a2a;
     -fx-border-color: #555555;
+    -fx-text-fill: #f0f0f0;
+    -fx-padding: 6px;
+    -fx-font-size: 13px;
+}
+
+/* === Willkommenstitel === */
+.welcome-label {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f5f5f5;
 }

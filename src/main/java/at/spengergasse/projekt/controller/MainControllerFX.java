@@ -120,7 +120,19 @@ public class MainControllerFX {
     }
 
     public void handleZuruecksetzen(ActionEvent e) {
-        aktuellerPfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
+        String standardPfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
+        File alteDatei = new File(aktuellerPfad);
+        File neueDatei = new File(standardPfad);
+
+        try {
+            if (alteDatei.exists() && !alteDatei.getAbsolutePath().equals(neueDatei.getAbsolutePath())) {
+                Files.copy(alteDatei.toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException ex) {
+            new Alert(Alert.AlertType.ERROR, "Fehler beim Zurücksetzen der Datei.").showAndWait();
+        }
+
+        aktuellerPfad = standardPfad;
         view.setFooterPath(aktuellerPfad);
 
         darkModeAktiv = false;
@@ -174,9 +186,23 @@ public class MainControllerFX {
     }
 
     public void handlePfadZuruecksetzen(ActionEvent e) {
-        aktuellerPfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
+        File alteDatei = new File(aktuellerPfad);
+        String defaultPfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
+        File neueDatei = new File(defaultPfad);
+
+        try {
+            if (alteDatei.exists()) {
+                Files.move(alteDatei.toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException ex) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Fehler beim Zurückverschieben der Datei.");
+            alert.showAndWait();
+        }
+
+        aktuellerPfad = neueDatei.getAbsolutePath();
         view.setFooterPath(aktuellerPfad);
         view.setCenterContent(new TerminViewFX(username, aktuellerPfad));
     }
+
 
 }
