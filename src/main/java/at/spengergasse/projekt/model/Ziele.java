@@ -1,32 +1,35 @@
 package at.spengergasse.projekt.model;
 
 /**
- * (Geplant für spätere Speicherung einzelner Ziele)
- * Wird aktuell nicht verwendet, kann für Datei-Speicherung vorbereitet werden.
+ * Repräsentiert ein Ziel mit Titel und Beschreibung.
  */
 public class Ziele {
+    private String titel;
+    private String beschreibung;
 
-    private String text;
-    private boolean erledigt;
-
-    public Ziele(String text, boolean erledigt) {
-        this.text = text;
-        this.erledigt = erledigt;
+    /**
+     * Konstruktor für Ziel.
+     * @param titel Titel des Ziels
+     * @param beschreibung Beschreibung des Ziels
+     */
+    public Ziele(String titel, String beschreibung) {
+        this.titel = titel;
+        this.beschreibung = beschreibung;
     }
 
-    public String getText() {
-        return text;
+    public String getTitel() {
+        return titel;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setTitel(String titel) {
+        this.titel = titel;
     }
 
-    public boolean isErledigt() {
-        return erledigt;
+    public String getBeschreibung() {
+        return beschreibung;
     }
 
-    public void setErledigt(boolean erledigt) {
-        this.erledigt = erledigt;
+    public void setBeschreibung(String beschreibung) {
+        this.beschreibung = beschreibung;
     }
 }

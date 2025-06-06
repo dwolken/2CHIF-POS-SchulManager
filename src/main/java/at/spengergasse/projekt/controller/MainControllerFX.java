@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.MenuItem;
 
 import javafx.scene.layout.HBox;
@@ -21,6 +22,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controller für das Hauptfenster. Steuert Navigation, Menüaktionen und View-Wechsel.
@@ -120,30 +122,29 @@ public class MainControllerFX {
     }
 
     public void handleZuruecksetzen(ActionEvent e) {
-        String standardPfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
-        File alteDatei = new File(aktuellerPfad);
-        File neueDatei = new File(standardPfad);
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Willst du wirklich ALLES zurücksetzen?\nAlle Termine und Ziele werden gelöscht.");
+        Optional<ButtonType> result = confirm.showAndWait();
 
-        try {
-            if (alteDatei.exists() && !alteDatei.getAbsolutePath().equals(neueDatei.getAbsolutePath())) {
-                Files.copy(alteDatei.toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+
+            handlePfadZuruecksetzen(new ActionEvent());
+
+            File termineFile = new File(aktuellerPfad);
+            if (termineFile.exists()) {
+                termineFile.delete();
             }
-        } catch (IOException ex) {
-            new Alert(Alert.AlertType.ERROR, "Fehler beim Zurücksetzen der Datei.").showAndWait();
+
+            String zielePfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_ziele.csv";
+            File zieleFile = new File(zielePfad);
+            if (zieleFile.exists()) {
+                zieleFile.delete();
+            }
+
+            // View zurücksetzen auf Start
+            view.loadWelcomeCenter(username);
         }
-
-        aktuellerPfad = standardPfad;
-        view.setFooterPath(aktuellerPfad);
-
-        darkModeAktiv = false;
-        Scene scene = view.getScene();
-        if (scene != null) {
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
-        }
-
-        view.setCenterContent(new TerminViewFX(username, aktuellerPfad));
     }
+
 
 
     public void handleLogout(ActionEvent e) {
