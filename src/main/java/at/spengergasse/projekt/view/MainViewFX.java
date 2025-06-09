@@ -7,8 +7,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+
 import java.io.File;
 
+/**
+ * View für die Hauptanwendung inklusive Menü, Buttons, Footer und Controller-Anbindung.
+ */
 public class MainViewFX {
 
     private final BorderPane root;
@@ -24,10 +28,14 @@ public class MainViewFX {
 
         root.setTop(createNavigationBox());
         root.setBottom(createFooter(username));
+        controller.updateFooter();
         loadWelcomeCenter(username);
 
-        scene = new Scene(root, 1000, 600);
+
+        scene = new Scene(root, 1120, 650);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        controller.loadDarkModeState(scene);
+
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("SchulManager - Willkommen " + username);
@@ -42,10 +50,14 @@ public class MainViewFX {
 
         Menu dateiMenu = new Menu("Datei");
         MenuItem termineLaden = new MenuItem("Termine aus Datei laden");
-        MenuItem pfadAendern = new MenuItem("Speicherpfad ändern");
+        MenuItem zieleLaden = new MenuItem("Ziele aus Datei laden");
+        MenuItem pfadAendernTermine = new MenuItem("Speicherpfad ändern (Termine)");
+        MenuItem pfadAendernZiele = new MenuItem("Speicherpfad ändern (Ziele)");
         termineLaden.setOnAction(controller::handleTermineLaden);
-        pfadAendern.setOnAction(controller::handlePfadAendern);
-        dateiMenu.getItems().addAll(termineLaden, pfadAendern);
+        zieleLaden.setOnAction(controller::handleZieleLaden);
+        pfadAendernTermine.setOnAction(controller::handlePfadAendernTermine);
+        pfadAendernZiele.setOnAction(controller::handlePfadAendernZiele);
+        dateiMenu.getItems().addAll(termineLaden, zieleLaden, pfadAendernTermine, pfadAendernZiele);
 
         Menu fensterMenu = new Menu("Fenster");
         MenuItem neueInstanz = new MenuItem("Neue Instanz öffnen");
@@ -90,7 +102,6 @@ public class MainViewFX {
         btnZiele.setOnAction(controller::handleZiele);
 
         buttonBox.getChildren().addAll(btnHome, btnTermine, btnStatistik, btnZiele);
-
         container.getChildren().addAll(menuBar, buttonBox);
         return container;
     }
@@ -111,8 +122,7 @@ public class MainViewFX {
         footer.getStyleClass().add("footer");
 
         Label userLabel = new Label("Angemeldet als: " + username);
-        String pfad = System.getProperty("user.home") + File.separator + "SchulManager" + File.separator + "data" + File.separator + username + "_termine.csv";
-        footerLabel = new Label("Speicherpfad: " + pfad);
+        footerLabel = new Label("Speicherpfad: -");
 
         Button logoutButton = new Button("Abmelden");
         logoutButton.setOnAction(controller::handleLogout);
@@ -124,18 +134,27 @@ public class MainViewFX {
         return footer;
     }
 
-    public void setCenterContent(javafx.scene.Node node) {
-        root.setCenter(node);
+    /**
+     * Aktualisiert den Footer und zeigt immer beide Speicherpfade an:
+     * einen für Termine und einen für Ziele. Wird unabhängig vom aktuellen View verwendet.
+     *
+     * @param pfadTermine Pfad zur Termine-Datei
+     * @param pfadZiele   Pfad zur Ziele-Datei
+     */
+    public void setFooterPath(String pfadTermine, String pfadZiele) {
+        if (footerLabel != null) {
+            String pfadT = new File(pfadTermine).getParent();
+            String pfadZ = new File(pfadZiele).getParent();
+            footerLabel.setText("Termine: " + pfadT + " | Ziele: " + pfadZ);
+        }
     }
 
-    public void setFooterPath(String pfad) {
-        if (footerLabel != null) {
-            footerLabel.setText("Speicherpfad: " + pfad);
-        }
+
+    public void setCenterContent(javafx.scene.Node node) {
+        root.setCenter(node);
     }
 
     public Scene getScene() {
         return root.getScene();
     }
-
 }

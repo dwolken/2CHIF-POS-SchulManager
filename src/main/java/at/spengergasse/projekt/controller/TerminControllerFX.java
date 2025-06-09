@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Optional;
 
 public class TerminControllerFX {
 
@@ -44,7 +45,7 @@ public class TerminControllerFX {
         datumPicker.setPromptText("Datum");
         artBox.getItems().setAll("Prüfung", "Hausaufgabe", "Event", "Sonstiges");
         artBox.setPromptText("Art");
-        notizField.setPromptText("Notiz");
+        notizField.setPromptText("Notiz (optional)");
 
         speichernButton.setOnAction(e -> handleSpeichern());
 
@@ -124,6 +125,22 @@ public class TerminControllerFX {
             return;
         }
 
+        if (datum.isBefore(LocalDate.now())) {
+            Alert warnung = new Alert(Alert.AlertType.CONFIRMATION);
+            warnung.setTitle("Achtung: Vergangenes Datum");
+            warnung.setHeaderText("Der Termin liegt in der Vergangenheit.");
+            warnung.setContentText("Willst du ihn trotzdem speichern?");
+
+            ButtonType speichern = new ButtonType("Trotzdem speichern");
+            ButtonType abbrechen = new ButtonType("Abbrechen", ButtonBar.ButtonData.CANCEL_CLOSE);
+            warnung.getButtonTypes().setAll(speichern, abbrechen);
+
+            Optional<ButtonType> result = warnung.showAndWait();
+            if (result.isEmpty() || result.get() == abbrechen) {
+                return; // Benutzer hat abgebrochen → raus
+            }
+        }
+
         Termin neu = new Termin(titel, datum, art, notiz);
         termine.add(neu);
         saveTermine();
@@ -133,6 +150,7 @@ public class TerminControllerFX {
         artBox.setValue(null);
         notizField.clear();
     }
+
 
     private void handleLöschen() {
         Termin ausgewählt = tableView.getSelectionModel().getSelectedItem();

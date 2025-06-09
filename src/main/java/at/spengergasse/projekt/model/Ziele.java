@@ -1,35 +1,65 @@
 package at.spengergasse.projekt.model;
 
+import java.util.Objects;
+
 /**
- * Repräsentiert ein Ziel mit Titel und Beschreibung.
+ * Modellklasse für ein einzelnes Ziel. Enthält Zieltext und Erledigt-Status.
  */
 public class Ziele {
-    private String titel;
-    private String beschreibung;
+
+    private String zielText;
+    private boolean erledigt;
 
     /**
-     * Konstruktor für Ziel.
-     * @param titel Titel des Ziels
-     * @param beschreibung Beschreibung des Ziels
+     * Konstruktor mit Zieltext.
+     * @param zielText Inhalt des Ziels
      */
-    public Ziele(String titel, String beschreibung) {
-        this.titel = titel;
-        this.beschreibung = beschreibung;
+    public Ziele(String zielText) {
+        this.zielText = zielText;
+        this.erledigt = false;
     }
 
-    public String getTitel() {
-        return titel;
+    /**
+     * Konstruktor mit Zieltext und Erledigt-Status.
+     * @param zielText Inhalt des Ziels
+     * @param erledigt true, wenn erledigt
+     */
+    public Ziele(String zielText, boolean erledigt) {
+        this.zielText = zielText;
+        this.erledigt = erledigt;
     }
 
-    public void setTitel(String titel) {
-        this.titel = titel;
+    public String getZielText() {
+        return zielText;
     }
 
-    public String getBeschreibung() {
-        return beschreibung;
+    public void setZielText(String zielText) {
+        this.zielText = zielText;
     }
 
-    public void setBeschreibung(String beschreibung) {
-        this.beschreibung = beschreibung;
+    public boolean isErledigt() {
+        return erledigt;
+    }
+
+    public void setErledigt(boolean erledigt) {
+        this.erledigt = erledigt;
+    }
+
+    @Override
+    public String toString() {
+        return zielText;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Ziele ziele = (Ziele) o;
+        return Objects.equals(zielText, ziele.zielText);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(zielText);
     }
 }

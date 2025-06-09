@@ -5,81 +5,107 @@ import at.spengergasse.projekt.model.Ziele;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.*;
 
 /**
- * View für die Zielverwaltung.
+ * View für die Anzeige und Bearbeitung von Zielen.
+ * Zeigt eine Liste mit Checkboxen, Eingabezeile und Buttons.
  */
 public class ZieleViewFX extends VBox {
 
     private final ZieleControllerFX controller;
+    private final ListView<Ziele> listView;
+    private final TextField eingabeFeld;
+    private final Button addBtn;
+    private final Button removeBtn;
 
-    public ZieleViewFX(String username) {
-        this.controller = new ZieleControllerFX(username);
+    /**
+     * Konstruktor für die Ziel-Ansicht.
+     *
+     * @param username Benutzername
+     * @param pfad     Speicherpfad zur Ziel-Datei
+     */
+    public ZieleViewFX(String username, String pfad) {
+        this.controller = new ZieleControllerFX(username, pfad);
 
         this.setSpacing(20);
         this.setPadding(new Insets(30));
         this.setAlignment(Pos.TOP_CENTER);
 
-        TableView<Ziele> table = new TableView<>(controller.getZiele());
-        TableColumn<Ziele, String> titelCol = new TableColumn<>("Titel");
-        titelCol.setCellValueFactory(new PropertyValueFactory<>("titel"));
+        listView = new ListView<>(controller.getZiele());
+        listView.setCellFactory(lv -> new ListCell<>() {
+            private final CheckBox checkBox = new CheckBox();
+            private final HBox hBox = new HBox(10);
 
-        TableColumn<Ziele, String> beschrCol = new TableColumn<>("Beschreibung");
-        beschrCol.setCellValueFactory(new PropertyValueFactory<>("beschreibung"));
+            {
+                hBox.setAlignment(Pos.CENTER_LEFT);
+                hBox.getChildren().add(checkBox);
+            }
 
-        table.getColumns().addAll(titelCol, beschrCol);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        VBox.setVgrow(table, Priority.ALWAYS);
-
-        // Auswahl aufheben bei Klick auf leere Stelle
-        table.setRowFactory(tv -> {
-            TableRow<Ziele> row = new TableRow<>();
-            row.setOnMouseClicked(e -> {
-                if (row.isEmpty()) {
-                    table.getSelectionModel().clearSelection();
+            @Override
+            protected void updateItem(Ziele item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    checkBox.setText(item.getZielText());
+                    checkBox.setSelected(item.isErledigt());
+                    checkBox.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> {
+                        item.setErledigt(isNowSelected);
+                        controller.save();
+                    });
+                    setGraphic(hBox);
                 }
-            });
-            return row;
+            }
         });
 
-        TextField titelField = new TextField();
-        titelField.setPromptText("Titel");
-
-        TextField beschrField = new TextField();
-        beschrField.setPromptText("Beschreibung");
-
-        Button addBtn = new Button("Hinzufügen");
-        Button removeBtn = new Button("Löschen");
-        removeBtn.setDisable(true);
-
-        // Button aktivieren nur bei Auswahl
-        table.getSelectionModel().selectedItemProperty().addListener((obs, alt, neu) -> {
-            removeBtn.setDisable(neu == null);
+        listView.setOnMouseClicked((MouseEvent event) -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                ListCell<?> clickedCell = null;
+                for (var node : listView.lookupAll(".list-cell")) {
+                    if (node instanceof ListCell<?> cell && cell.getBoundsInParent().contains(event.getX(), event.getY())) {
+                        clickedCell = cell;
+                        break;
+                    }
+                }
+                if (clickedCell == null || clickedCell.getItem() == null) {
+                    listView.getSelectionModel().clearSelection();
+                } else {
+                    listView.getSelectionModel().select(clickedCell.getIndex());
+                }
+            }
         });
 
+        eingabeFeld = new TextField();
+        eingabeFeld.setPromptText("Neues Ziel eingeben...");
+
+        addBtn = new Button("Hinzufügen");
         addBtn.setOnAction(e -> {
-            if (!titelField.getText().isEmpty() && !beschrField.getText().isEmpty()) {
-                Ziele ziel = new Ziele(titelField.getText(), beschrField.getText());
-                controller.addZiel(ziel);
-                titelField.clear();
-                beschrField.clear();
+            String text = eingabeFeld.getText().trim();
+            if (!text.isEmpty()) {
+                controller.addZiel(new Ziele(text));
+                eingabeFeld.clear();
             }
         });
 
+        removeBtn = new Button("Löschen");
+        removeBtn.setDisable(true);
         removeBtn.setOnAction(e -> {
-            Ziele ziel = table.getSelectionModel().getSelectedItem();
-            if (ziel != null) {
-                controller.removeZiel(ziel);
+            Ziele selected = listView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                controller.removeZiel(selected);
             }
         });
 
-        HBox eingabeBox = new HBox(10, titelField, beschrField, addBtn, removeBtn);
-        eingabeBox.setAlignment(Pos.CENTER);
+        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            removeBtn.setDisable(newSel == null);
+        });
 
-        this.getChildren().addAll(table, eingabeBox);
+        VBox form = new VBox(10, eingabeFeld, addBtn, removeBtn);
+        form.setAlignment(Pos.CENTER);
+
+        this.getChildren().addAll(listView, form);
     }
 }

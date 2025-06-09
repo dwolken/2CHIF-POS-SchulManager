@@ -6,83 +6,93 @@ import javafx.collections.ObservableList;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.List;
+import java.nio.file.Path;
 
 /**
- * Controller für Zielverwaltung – lädt, speichert und verwaltet die Ziel-Daten.
+ * Controller für die Ziele-Ansicht.
+ * Verwaltet das Laden, Speichern und Bearbeiten der Ziel-Daten.
  */
 public class ZieleControllerFX {
 
+    private final String username;
     private final String pfad;
-    private final ObservableList<Ziele> ziele;
+    private final ObservableList<Ziele> zieleListe;
 
     /**
-     * Erstellt einen ZieleController für den übergebenen Benutzer.
-     * @param username aktueller Benutzername
+     * Konstruktor für den Ziele-Controller.
+     *
+     * @param username Benutzername (nur zur Identifikation)
+     * @param pfad     Speicherpfad zur Ziel-Datei
      */
-    public ZieleControllerFX(String username) {
-        this.pfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_ziele.csv";
-        this.ziele = FXCollections.observableArrayList();
-        loadZiele();
-    }
-
-    public ObservableList<Ziele> getZiele() {
-        return ziele;
+    public ZieleControllerFX(String username, String pfad) {
+        this.username = username;
+        this.pfad = pfad;
+        this.zieleListe = FXCollections.observableArrayList();
+        load();
     }
 
     /**
-     * Fügt ein neues Ziel hinzu und speichert es.
-     * @param ziel das neue Ziel
+     * Gibt die ObservableList mit den aktuellen Zielen zurück.
+     *
+     * @return Liste der Ziele
+     */
+    public ObservableList<Ziele> getZiele() {
+        return zieleListe;
+    }
+
+    /**
+     * Fügt ein neues Ziel hinzu und speichert die Liste.
+     *
+     * @param ziel Das neue Ziel
      */
     public void addZiel(Ziele ziel) {
-        ziele.add(ziel);
-        saveZiele();
+        zieleListe.add(ziel);
+        save();
     }
 
     /**
-     * Entfernt ein Ziel aus der Liste und speichert die Änderung.
-     * @param ziel Ziel, das entfernt werden soll
+     * Entfernt ein Ziel aus der Liste und speichert.
+     *
+     * @param ziel Das Ziel, das entfernt werden soll
      */
     public void removeZiel(Ziele ziel) {
-        ziele.remove(ziel);
-        saveZiele();
+        zieleListe.remove(ziel);
+        save();
     }
 
     /**
-     * Lädt Ziele aus der CSV-Datei. Wenn keine Datei vorhanden ist, wird sie ignoriert.
+     * Lädt die Ziele aus der Datei.
      */
-    private void loadZiele() {
-        File file = new File(pfad);
-        if (!file.exists()) return;
+    private void load() {
+        Path path = Path.of(pfad);
+        if (!Files.exists(path)) return;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String zeile;
-            while ((zeile = reader.readLine()) != null) {
-                String[] parts = zeile.split(";");
-                if (parts.length >= 2) {
-                    ziele.add(new Ziele(parts[0], parts[1]));
+        try (BufferedReader reader = new BufferedReader(new FileReader(pfad))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";", 2);
+                if (parts.length == 2) {
+                    boolean erledigt = Boolean.parseBoolean(parts[0]);
+                    String text = parts[1];
+                    zieleListe.add(new Ziele(text, erledigt));
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace(); // optional: Logger verwenden
+            System.err.println("Fehler beim Laden der Ziele-Datei.");
         }
     }
 
     /**
-     * Speichert alle Ziele in die CSV-Datei.
+     * Speichert die aktuelle Liste in die Datei.
      */
-    public void saveZiele() {
-        try {
-            File file = new File(pfad);
-            file.getParentFile().mkdirs();
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                for (Ziele ziel : ziele) {
-                    writer.write(ziel.getTitel() + ";" + ziel.getBeschreibung());
-                    writer.newLine();
-                }
+    public void save() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pfad))) {
+            for (Ziele ziel : zieleListe) {
+                writer.write(ziel.isErledigt() + ";" + ziel.getZielText());
+                writer.newLine();
             }
         } catch (IOException e) {
-            e.printStackTrace(); // optional: Fehleranzeige im UI
+            System.err.println("Fehler beim Speichern der Ziele-Datei.");
         }
     }
 }

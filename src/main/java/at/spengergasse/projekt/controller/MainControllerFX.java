@@ -3,14 +3,9 @@ package at.spengergasse.projekt.controller;
 import at.spengergasse.projekt.model.CsvManager;
 import at.spengergasse.projekt.model.Termin;
 import at.spengergasse.projekt.view.*;
-
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.MenuItem;
-
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -25,20 +20,26 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Controller für das Hauptfenster. Steuert Navigation, Menüaktionen und View-Wechsel.
+ * MainControllerFX steuert alle Funktionen der Anwendung wie Navigation, Dateioperationen und Dark Mode.
+ * Er verwaltet die aktuelle Benutzer-Session und die Pfade zu Termin- und Ziele-Dateien.
  */
 public class MainControllerFX {
 
     private final MainViewFX view;
     private final String username;
-    private String aktuellerPfad;
+    private String terminePfad;
+    private String zielePfad;
     private boolean darkModeAktiv = false;
 
     public MainControllerFX(MainViewFX view, String username) {
         this.view = view;
         this.username = username;
-        this.aktuellerPfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
-        view.setFooterPath(aktuellerPfad);
+        this.terminePfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
+        this.zielePfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_ziele.csv";
+    }
+
+    public void updateFooter() {
+        view.setFooterPath(terminePfad, zielePfad);
     }
 
     public String getUsername() {
@@ -46,164 +47,192 @@ public class MainControllerFX {
     }
 
     public void handleTermine(ActionEvent e) {
-        view.setCenterContent(new TerminViewFX(username, aktuellerPfad));
+        view.setCenterContent(new TerminViewFX(username, terminePfad));
+        updateFooter();
     }
 
     public void handleStatistik(ActionEvent e) {
         view.setCenterContent(new StatistikViewFX(username));
+        updateFooter();
     }
 
     public void handleZiele(ActionEvent e) {
-        view.setCenterContent(new ZieleViewFX(username));
+        view.setCenterContent(new ZieleViewFX(username, zielePfad));
+        updateFooter();
     }
 
     public void handleNeueInstanz(ActionEvent e) {
         try {
             File jarFile = new File(MainControllerFX.class.getProtectionDomain().getCodeSource().getLocation().toURI());
             if (!jarFile.getName().endsWith(".jar")) {
-                Alert alert = new Alert(Alert.AlertType.WARNING, "Neue Instanz geht nur aus dem Jar-File.");
-                alert.showAndWait();
+                new Alert(Alert.AlertType.WARNING, "Neue Instanz geht nur aus dem Jar-File.").showAndWait();
                 return;
             }
-
             String javaExe = System.getProperty("os.name").toLowerCase().contains("win") ? "javaw" : "java";
-
-            new ProcessBuilder(javaExe, "-jar", jarFile.getPath())
-                    .start();
-
+            new ProcessBuilder(javaExe, "-jar", jarFile.getPath()).start();
         } catch (URISyntaxException | IOException ex) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Fehler beim Öffnen einer neuen Instanz.");
-            alert.showAndWait();
+            new Alert(Alert.AlertType.ERROR, "Fehler beim Öffnen einer neuen Instanz.").showAndWait();
         }
     }
 
-
-    public void handlePfadAendern(ActionEvent e) {
+    public void handlePfadAendernTermine(ActionEvent e) {
         DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Neuen Speicherort wählen");
+        chooser.setTitle("Neuen Speicherort wählen (Termine)");
         File selectedDir = chooser.showDialog(null);
         if (selectedDir != null) {
-            File alteDatei = new File(aktuellerPfad);
             File neueDatei = new File(selectedDir.getAbsolutePath() + "/" + username + "_termine.csv");
-
             try {
-                if (!neueDatei.exists()) {
-                    Files.move(alteDatei.toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                }
-                aktuellerPfad = neueDatei.getAbsolutePath();
-                view.setFooterPath(aktuellerPfad);
-                view.setCenterContent(new TerminViewFX(username, aktuellerPfad));
+                Files.move(new File(terminePfad).toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                terminePfad = neueDatei.getAbsolutePath();
+                updateFooter();
+                view.setCenterContent(new TerminViewFX(username, terminePfad));
             } catch (IOException ex) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Fehler beim Verschieben der Datei.");
-                alert.showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Verschieben der Datei.").showAndWait();
             }
         }
     }
 
-
-    public void handleTermineLaden(ActionEvent e) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Termine laden");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV-Dateien", "*.csv"));
-        File file = fileChooser.showOpenDialog(null);
-
-        if (file != null) {
+    public void handlePfadAendernZiele(ActionEvent e) {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Neuen Speicherort wählen (Ziele)");
+        File selectedDir = chooser.showDialog(null);
+        if (selectedDir != null) {
+            File neueDatei = new File(selectedDir.getAbsolutePath() + "/" + username + "_ziele.csv");
             try {
-                List<Termin> geladeneTermine = CsvManager.loadTermine(file.getAbsolutePath());
-                List<Termin> eigeneTermine = CsvManager.loadTermine(aktuellerPfad);
-                eigeneTermine.addAll(geladeneTermine);
-                CsvManager.saveTermine(eigeneTermine, aktuellerPfad);
-                view.setCenterContent(new TerminViewFX(username, aktuellerPfad));
+                Files.move(new File(zielePfad).toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                zielePfad = neueDatei.getAbsolutePath();
+                updateFooter();
+                view.setCenterContent(new ZieleViewFX(username, zielePfad));
             } catch (IOException ex) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Termine.");
-                alert.showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Verschieben der Ziele-Datei.").showAndWait();
             }
         }
+    }
+
+    public void handlePfadZuruecksetzen(ActionEvent e) {
+        String defaultTermine = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
+        String defaultZiele = System.getProperty("user.home") + "/SchulManager/data/" + username + "_ziele.csv";
+        try {
+            Files.move(new File(terminePfad).toPath(), new File(defaultTermine).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(new File(zielePfad).toPath(), new File(defaultZiele).toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            new Alert(Alert.AlertType.ERROR, "Fehler beim Zurücksetzen der Pfade.").showAndWait();
+        }
+        terminePfad = defaultTermine;
+        zielePfad = defaultZiele;
+        updateFooter();
     }
 
     public void handleZuruecksetzen(ActionEvent e) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Willst du wirklich ALLES zurücksetzen?\nAlle Termine und Ziele werden gelöscht.");
         Optional<ButtonType> result = confirm.showAndWait();
-
         if (result.isPresent() && result.get() == ButtonType.OK) {
-
             handlePfadZuruecksetzen(new ActionEvent());
-
-            File termineFile = new File(aktuellerPfad);
-            if (termineFile.exists()) {
-                termineFile.delete();
-            }
-
-            String zielePfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_ziele.csv";
-            File zieleFile = new File(zielePfad);
-            if (zieleFile.exists()) {
-                zieleFile.delete();
-            }
-
-            // View zurücksetzen auf Start
+            new File(terminePfad).delete();
+            new File(zielePfad).delete();
             view.loadWelcomeCenter(username);
+            updateFooter();
+            darkModeAktiv = false;
+            Scene scene = view.getScene();
+            scene.getStylesheets().clear();
+            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+            saveDarkModeState();
         }
     }
 
-
-
     public void handleLogout(ActionEvent e) {
-        Stage currentStage = (Stage) ((Button) e.getSource()).getScene().getWindow();
-        currentStage.close();
+        ((Stage) ((Button) e.getSource()).getScene().getWindow()).close();
         new LoginViewFX(new Stage());
     }
 
     public void handleToggleDarkMode(MenuItem item, Scene scene) {
         darkModeAktiv = !darkModeAktiv;
         scene.getStylesheets().clear();
-        if (darkModeAktiv) {
-            scene.getStylesheets().add(getClass().getResource("/dark.css").toExternalForm());
-            item.setText("Dark Mode deaktivieren");
-        } else {
-            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
-            item.setText("Dark Mode aktivieren");
-        }
+        scene.getStylesheets().add(getClass().getResource(
+                darkModeAktiv ? "/dark.css" : "/styles.css").toExternalForm());
+        item.setText(darkModeAktiv ? "Dark Mode deaktivieren" : "Dark Mode aktivieren");
+        saveDarkModeState();
     }
 
-    public HBox getNavBar() {
-        Button homeButton = new Button("Home");
-        Button termineButton = new Button("Termine");
-        Button statistikButton = new Button("Statistik");
-        Button zieleButton = new Button("Ziele");
+    public void handleTermineLaden(ActionEvent e) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Termine aus Datei laden");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV-Dateien", "*.csv"));
+        File file = fileChooser.showOpenDialog(null);
 
-        homeButton.setOnAction(e -> view.loadWelcomeCenter(username));
-        termineButton.setOnAction(this::handleTermine);
-        statistikButton.setOnAction(this::handleStatistik);
-        zieleButton.setOnAction(this::handleZiele);
-
-        homeButton.getStyleClass().add("nav-button");
-        termineButton.getStyleClass().add("nav-button");
-        statistikButton.getStyleClass().add("nav-button");
-        zieleButton.getStyleClass().add("nav-button");
-
-        HBox navBar = new HBox(20, homeButton, termineButton, statistikButton, zieleButton);
-        navBar.setAlignment(javafx.geometry.Pos.CENTER);
-        return navBar;
-    }
-
-    public void handlePfadZuruecksetzen(ActionEvent e) {
-        File alteDatei = new File(aktuellerPfad);
-        String defaultPfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
-        File neueDatei = new File(defaultPfad);
-
-        try {
-            if (alteDatei.exists()) {
-                Files.move(alteDatei.toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        if (file != null) {
+            try {
+                List<Termin> geladene = CsvManager.loadTermine(file.getAbsolutePath());
+                List<Termin> eigene = CsvManager.loadTermine(terminePfad);
+                eigene.addAll(geladene);
+                CsvManager.saveTermine(eigene, terminePfad);
+                view.setCenterContent(new TerminViewFX(username, terminePfad));
+                updateFooter();
+            } catch (IOException ex) {
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Termine.").showAndWait();
             }
-        } catch (IOException ex) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Fehler beim Zurückverschieben der Datei.");
-            alert.showAndWait();
         }
-
-        aktuellerPfad = neueDatei.getAbsolutePath();
-        view.setFooterPath(aktuellerPfad);
-        view.setCenterContent(new TerminViewFX(username, aktuellerPfad));
     }
 
 
+    public void handleZieleLaden(ActionEvent e) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Ziele aus Datei laden");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV-Dateien", "*.csv"));
+        File file = fileChooser.showOpenDialog(null);
+
+        if (file != null) {
+            try {
+                List<String> neueZeilen = Files.readAllLines(file.toPath());
+                File zielDatei = new File(zielePfad);
+                if (!zielDatei.exists()) {
+                    zielDatei.getParentFile().mkdirs();
+                    zielDatei.createNewFile();
+                }
+
+                List<String> vorhandeneZeilen = Files.readAllLines(zielDatei.toPath());
+
+                for (String zeile : neueZeilen) {
+                    String[] parts = zeile.split(";", 2);
+                    if (parts.length == 2) {
+                        boolean erledigt = Boolean.parseBoolean(parts[1]);
+                        String text = parts[0];
+                        vorhandeneZeilen.add(erledigt + ";" + text);
+                    }
+                }
+
+                Files.write(zielDatei.toPath(), vorhandeneZeilen);
+                view.setCenterContent(new ZieleViewFX(username, zielePfad));
+                updateFooter();
+
+            } catch (IOException ex) {
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Ziele.").showAndWait();
+            }
+        }
+    }
+
+
+
+    private void saveDarkModeState() {
+        try {
+            File file = new File(System.getProperty("user.home") + "/SchulManager/data/" + username + "_config.properties");
+            file.getParentFile().mkdirs();
+            Files.writeString(file.toPath(), darkModeAktiv ? "dark=true" : "dark=false");
+        } catch (IOException e) {
+            System.err.println("Konnte DarkMode nicht speichern.");
+        }
+    }
+
+    public void loadDarkModeState(Scene scene) {
+        try {
+            File file = new File(System.getProperty("user.home") + "/SchulManager/data/" + username + "_config.properties");
+            if (file.exists() && Files.readString(file.toPath()).contains("dark=true")) {
+                darkModeAktiv = true;
+                scene.getStylesheets().clear();
+                scene.getStylesheets().add(getClass().getResource("/dark.css").toExternalForm());
+            }
+        } catch (IOException e) {
+            System.err.println("Konnte DarkMode nicht laden.");
+        }
+    }
 }
