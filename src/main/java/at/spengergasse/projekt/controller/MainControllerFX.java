@@ -1,12 +1,10 @@
 package at.spengergasse.projekt.controller;
 
-import at.spengergasse.projekt.model.CsvManager;
-import at.spengergasse.projekt.model.Termin;
+import at.spengergasse.projekt.model.*;
 import at.spengergasse.projekt.view.*;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -20,26 +18,21 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * MainControllerFX steuert alle Funktionen der Anwendung wie Navigation, Dateioperationen und Dark Mode.
- * Er verwaltet die aktuelle Benutzer-Session und die Pfade zu Termin- und Ziele-Dateien.
+ * Controller für die Hauptanwendung. Verbindet UI-Events mit Logik.
  */
 public class MainControllerFX {
 
     private final MainViewFX view;
     private final String username;
-    private String terminePfad;
-    private String zielePfad;
     private boolean darkModeAktiv = false;
 
     public MainControllerFX(MainViewFX view, String username) {
         this.view = view;
         this.username = username;
-        this.terminePfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
-        this.zielePfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_ziele.csv";
     }
 
     public void updateFooter() {
-        view.setFooterPath(terminePfad, zielePfad);
+        view.setFooterPath(PfadManager.getTerminPfad(username), PfadManager.getZielePfad(username));
     }
 
     public String getUsername() {
@@ -47,7 +40,7 @@ public class MainControllerFX {
     }
 
     public void handleTermine(ActionEvent e) {
-        view.setCenterContent(new TerminViewFX(username, terminePfad));
+        view.setCenterContent(new TerminViewFX(username));
         updateFooter();
     }
 
@@ -57,7 +50,7 @@ public class MainControllerFX {
     }
 
     public void handleZiele(ActionEvent e) {
-        view.setCenterContent(new ZieleViewFX(username, zielePfad));
+        view.setCenterContent(new ZieleViewFX(username));
         updateFooter();
     }
 
@@ -82,10 +75,10 @@ public class MainControllerFX {
         if (selectedDir != null) {
             File neueDatei = new File(selectedDir.getAbsolutePath() + "/" + username + "_termine.csv");
             try {
-                Files.move(new File(terminePfad).toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                terminePfad = neueDatei.getAbsolutePath();
+                Files.move(new File(PfadManager.getTerminPfad(username)).toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                PfadManager.setTerminPfad(username, neueDatei.getAbsolutePath());
                 updateFooter();
-                view.setCenterContent(new TerminViewFX(username, terminePfad));
+                view.setCenterContent(new TerminViewFX(username));
             } catch (IOException ex) {
                 new Alert(Alert.AlertType.ERROR, "Fehler beim Verschieben der Datei.").showAndWait();
             }
@@ -99,10 +92,10 @@ public class MainControllerFX {
         if (selectedDir != null) {
             File neueDatei = new File(selectedDir.getAbsolutePath() + "/" + username + "_ziele.csv");
             try {
-                Files.move(new File(zielePfad).toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                zielePfad = neueDatei.getAbsolutePath();
+                Files.move(new File(PfadManager.getZielePfad(username)).toPath(), neueDatei.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                PfadManager.setZielePfad(username, neueDatei.getAbsolutePath());
                 updateFooter();
-                view.setCenterContent(new ZieleViewFX(username, zielePfad));
+                view.setCenterContent(new ZieleViewFX(username));
             } catch (IOException ex) {
                 new Alert(Alert.AlertType.ERROR, "Fehler beim Verschieben der Ziele-Datei.").showAndWait();
             }
@@ -110,26 +103,26 @@ public class MainControllerFX {
     }
 
     public void handlePfadZuruecksetzen(ActionEvent e) {
-        String defaultTermine = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
-        String defaultZiele = System.getProperty("user.home") + "/SchulManager/data/" + username + "_ziele.csv";
+        String defaultTermine = PfadManager.getDefaultTerminPfad(username);
+        String defaultZiele = PfadManager.getDefaultZielePfad(username);
         try {
-            Files.move(new File(terminePfad).toPath(), new File(defaultTermine).toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Files.move(new File(zielePfad).toPath(), new File(defaultZiele).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(new File(PfadManager.getTerminPfad(username)).toPath(), new File(defaultTermine).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(new File(PfadManager.getZielePfad(username)).toPath(), new File(defaultZiele).toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException ex) {
             new Alert(Alert.AlertType.ERROR, "Fehler beim Zurücksetzen der Pfade.").showAndWait();
         }
-        terminePfad = defaultTermine;
-        zielePfad = defaultZiele;
+        PfadManager.setTerminPfad(username, defaultTermine);
+        PfadManager.setZielePfad(username, defaultZiele);
         updateFooter();
     }
 
     public void handleZuruecksetzen(ActionEvent e) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Willst du wirklich ALLES zurücksetzen?\nAlle Termine und Ziele werden gelöscht.");
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Willst du wirklich ALLES zurücksetzen? Alle Termine und Ziele werden gelöscht.");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             handlePfadZuruecksetzen(new ActionEvent());
-            new File(terminePfad).delete();
-            new File(zielePfad).delete();
+            new File(PfadManager.getTerminPfad(username)).delete();
+            new File(PfadManager.getZielePfad(username)).delete();
             view.loadWelcomeCenter(username);
             updateFooter();
             darkModeAktiv = false;
@@ -154,66 +147,7 @@ public class MainControllerFX {
         saveDarkModeState();
     }
 
-    public void handleTermineLaden(ActionEvent e) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Termine aus Datei laden");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV-Dateien", "*.csv"));
-        File file = fileChooser.showOpenDialog(null);
-
-        if (file != null) {
-            try {
-                List<Termin> geladene = CsvManager.loadTermine(file.getAbsolutePath());
-                List<Termin> eigene = CsvManager.loadTermine(terminePfad);
-                eigene.addAll(geladene);
-                CsvManager.saveTermine(eigene, terminePfad);
-                view.setCenterContent(new TerminViewFX(username, terminePfad));
-                updateFooter();
-            } catch (IOException ex) {
-                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Termine.").showAndWait();
-            }
-        }
-    }
-
-
-    public void handleZieleLaden(ActionEvent e) {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Ziele aus Datei laden");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV-Dateien", "*.csv"));
-        File file = fileChooser.showOpenDialog(null);
-
-        if (file != null) {
-            try {
-                List<String> neueZeilen = Files.readAllLines(file.toPath());
-                File zielDatei = new File(zielePfad);
-                if (!zielDatei.exists()) {
-                    zielDatei.getParentFile().mkdirs();
-                    zielDatei.createNewFile();
-                }
-
-                List<String> vorhandeneZeilen = Files.readAllLines(zielDatei.toPath());
-
-                for (String zeile : neueZeilen) {
-                    String[] parts = zeile.split(";", 2);
-                    if (parts.length == 2) {
-                        boolean erledigt = Boolean.parseBoolean(parts[1]);
-                        String text = parts[0];
-                        vorhandeneZeilen.add(erledigt + ";" + text);
-                    }
-                }
-
-                Files.write(zielDatei.toPath(), vorhandeneZeilen);
-                view.setCenterContent(new ZieleViewFX(username, zielePfad));
-                updateFooter();
-
-            } catch (IOException ex) {
-                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Ziele.").showAndWait();
-            }
-        }
-    }
-
-
-
-    private void saveDarkModeState() {
+    public void saveDarkModeState() {
         try {
             File file = new File(System.getProperty("user.home") + "/SchulManager/data/" + username + "_config.properties");
             file.getParentFile().mkdirs();
@@ -233,6 +167,62 @@ public class MainControllerFX {
             }
         } catch (IOException e) {
             System.err.println("Konnte DarkMode nicht laden.");
+        }
+    }
+
+    public void handleTermineLaden(ActionEvent e) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Termine importieren");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV-Dateien", "*.csv"));
+        File file = chooser.showOpenDialog(null);
+
+        if (file != null) {
+            try {
+                List<Termin> importiert = CsvManager.loadTermine(file.getAbsolutePath());
+                List<Termin> eigene = CsvManager.loadTermine(PfadManager.getTerminPfad(username));
+                eigene.addAll(importiert);
+                CsvManager.saveTermine(eigene, PfadManager.getTerminPfad(username));
+                view.setCenterContent(new TerminViewFX(username));
+                updateFooter();
+            } catch (IOException ex) {
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Termine.").showAndWait();
+            }
+        }
+    }
+
+    public void handleZieleLaden(ActionEvent e) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Ziele importieren");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV-Dateien", "*.csv"));
+        File file = chooser.showOpenDialog(null);
+
+        if (file != null) {
+            try {
+                List<String> neueZeilen = Files.readAllLines(file.toPath());
+                File zielDatei = new File(PfadManager.getZielePfad(username));
+                if (!zielDatei.exists()) {
+                    zielDatei.getParentFile().mkdirs();
+                    zielDatei.createNewFile();
+                }
+
+                List<String> vorhandeneZeilen = Files.readAllLines(zielDatei.toPath());
+
+                for (String zeile : neueZeilen) {
+                    String[] parts = zeile.split(";", 2);
+                    if (parts.length == 2) {
+                        boolean erledigt = Boolean.parseBoolean(parts[0]);
+                        String text = parts[1];
+                        vorhandeneZeilen.add(erledigt + ";" + text);
+                    }
+                }
+
+                Files.write(zielDatei.toPath(), vorhandeneZeilen);
+                view.setCenterContent(new ZieleViewFX(username));
+                updateFooter();
+
+            } catch (IOException ex) {
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Ziele.").showAndWait();
+            }
         }
     }
 }

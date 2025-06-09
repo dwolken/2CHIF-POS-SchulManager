@@ -5,86 +5,111 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Controller für Adminfunktionen: Benutzer anzeigen, bearbeiten und löschen.
+ * Controller für Adminfunktionen: Benutzer anzeigen, erstellen und löschen.
  */
 public class AdminControllerFX {
 
+    private final ObservableList<String[]> benutzerListe;
     private final TableView<String[]> table;
-    private final ObservableList<String[]> daten;
+    private final TextField benutzernameField = new TextField();
+    private final PasswordField passwortField = new PasswordField();
+    private final ComboBox<String> rolleBox = new ComboBox<>();
+    private final Button löschenButton = new Button("Löschen");
+    private final Button anlegenButton = new Button("Benutzer anlegen");
 
-    /**
-     * Initialisiert Controller und lädt Benutzerdaten.
-     */
     public AdminControllerFX() {
-        daten = FXCollections.observableArrayList();
-        table = new TableView<>(daten);
-        table.setPlaceholder(new Label("Keine Benutzer gefunden."));
+        this.benutzerListe = FXCollections.observableArrayList();
+        this.table = createTable();
         loadBenutzer();
-
-        TableColumn<String[], String> nameCol = new TableColumn<>("Benutzername");
-        nameCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue()[0]));
-
-        TableColumn<String[], String> rolleCol = new TableColumn<>("Rolle");
-        rolleCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue()[1]));
-
-        table.getColumns().addAll(nameCol, rolleCol);
-        table.setPrefHeight(300);
     }
 
-    /**
-     * Gibt die Benutzer-Tabelle zurück.
-     */
-    public TableView<String[]> getUserTable() {
+    public TableView<String[]> getTable() {
         return table;
     }
 
-    /**
-     * Aktionen wie Löschen und Bearbeiten
-     */
     public HBox getAktionen() {
-        Button löschenButton = new Button("Löschen");
+        löschenButton.setDisable(true);
         löschenButton.setOnAction(e -> handleLöschen());
+
+        table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            löschenButton.setDisable(newVal == null);
+        });
+
+        table.setRowFactory(tv -> {
+            TableRow<String[]> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (row.isEmpty()) {
+                    table.getSelectionModel().clearSelection();
+                    löschenButton.setDisable(true);
+                }
+            });
+            return row;
+        });
+
         HBox box = new HBox(10, löschenButton);
+        box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(10));
         return box;
     }
 
-    /**
-     * Formular zur Neuanlage eines Benutzers
-     */
-    public VBox getNeuesBenutzerFormular() {
-        TextField nameField = new TextField();
-        nameField.setPromptText("Benutzername");
-        PasswordField pwField = new PasswordField();
-        pwField.setPromptText("Passwort");
+    public HBox getFormular() {
+        benutzernameField.setPromptText("Benutzername");
+        passwortField.setPromptText("Passwort");
+        rolleBox.getItems().setAll("user", "admin");
+        rolleBox.setPromptText("Rolle wählen");
 
-        Button anlegenButton = new Button("Benutzer anlegen");
-        anlegenButton.setOnAction(e -> {
-            String name = nameField.getText().trim();
-            String pw = pwField.getText().trim();
-            if (!name.isEmpty() && !pw.isEmpty()) {
-                try {
-                    CsvManager.saveUser(name, pw, "user");
-                    loadBenutzer();
-                    nameField.clear();
-                    pwField.clear();
-                } catch (IOException ex) {
-                    showFehler("Fehler beim Speichern.");
-                }
-            }
-        });
+        anlegenButton.setOnAction(e -> handleAnlegen());
 
-        VBox form = new VBox(8, new Label("Neuen Benutzer erstellen:"), nameField, pwField, anlegenButton);
-        form.setPadding(new Insets(10));
-        return form;
+        HBox box = new HBox(10, benutzernameField, passwortField, rolleBox, anlegenButton);
+        box.setAlignment(Pos.CENTER);
+        box.setPadding(new Insets(10));
+        return box;
+    }
+
+    private TableView<String[]> createTable() {
+        TableView<String[]> tableView = new TableView<>(benutzerListe);
+        tableView.setEditable(false);
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<String[], String> nameCol = new TableColumn<>("Benutzername");
+        nameCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue()[0]));
+        nameCol.setStyle("-fx-alignment: CENTER;");
+
+        TableColumn<String[], String> rolleCol = new TableColumn<>("Rolle");
+        rolleCol.setCellValueFactory(param -> new SimpleStringProperty(param.getValue()[1]));
+        rolleCol.setStyle("-fx-alignment: CENTER;");
+
+        tableView.getColumns().addAll(nameCol, rolleCol);
+        return tableView;
+    }
+
+    private void handleAnlegen() {
+        String name = benutzernameField.getText().trim();
+        String pass = passwortField.getText().trim();
+        String rolle = rolleBox.getValue();
+
+        if (name.isEmpty() || pass.isEmpty() || rolle == null) {
+            showFehler("Bitte alle Felder ausfüllen.");
+            return;
+        }
+
+        try {
+            CsvManager.saveUser(name, pass, rolle);
+            loadBenutzer();
+            benutzernameField.clear();
+            passwortField.clear();
+            rolleBox.setValue(null);
+        } catch (IOException e) {
+            showFehler("Fehler beim Speichern.");
+        }
     }
 
     private void handleLöschen() {
@@ -109,17 +134,17 @@ public class AdminControllerFX {
 
     private void loadBenutzer() {
         try {
-            daten.setAll(CsvManager.loadBenutzer());
+            benutzerListe.setAll(CsvManager.loadBenutzer());
         } catch (IOException e) {
             showFehler("Fehler beim Laden der Benutzer.");
         }
     }
 
     private void showFehler(String msg) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setTitle("Fehler");
-        a.setHeaderText(null);
-        a.setContentText(msg);
-        a.showAndWait();
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Fehler");
+        alert.setHeaderText(null);
+        alert.setContentText(msg);
+        alert.showAndWait();
     }
 }

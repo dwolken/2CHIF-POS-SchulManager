@@ -106,4 +106,14 @@ public class CsvManager {
             return "ERROR";
         }
     }
+    public static String getRolle(String username) throws IOException {
+        return Files.lines(Paths.get(BENUTZER_PFAD))
+                .filter(line -> line.startsWith(username + ";"))
+                .map(line -> line.split(";"))
+                .filter(parts -> parts.length >= 2)
+                .map(parts -> parts[1])
+                .findFirst()
+                .orElse("user");
+    }
+
 }

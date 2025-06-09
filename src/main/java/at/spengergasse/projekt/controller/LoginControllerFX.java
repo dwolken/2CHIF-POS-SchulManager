@@ -64,13 +64,29 @@ public class LoginControllerFX {
                 return;
             }
 
-            new MainViewFX(new Stage(), username);
+            String rolle = CsvManager.getRolle(username); // aus CSV holen
+
+            if (rolle.equalsIgnoreCase("admin")) {
+                // Direkt AdminView starten
+                Stage adminStage = new Stage();
+                Scene adminScene = new Scene(new at.spengergasse.projekt.view.AdminViewFX(), 1120, 650);
+                adminScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm()); // CSS nicht vergessen
+                adminStage.setTitle("SchulManager - Willkommen admin");
+                adminStage.setScene(adminScene);
+                adminStage.show();
+            } else {
+                // Normale MainView starten
+                new MainViewFX(new Stage(), username);
+            }
+
             view.getStage().close();
 
         } catch (IOException ex) {
             showError("Fehler beim Laden der Benutzerdaten.");
         }
     }
+
+
 
     private void handleRegistration(ActionEvent e) {
         String username = view.getUsernameField().getText().trim();
@@ -99,6 +115,7 @@ public class LoginControllerFX {
             showError("Fehler beim Speichern des Benutzers.");
         }
     }
+
 
     private void showError(String message) {
         Label errorLabel = view.getErrorLabel();

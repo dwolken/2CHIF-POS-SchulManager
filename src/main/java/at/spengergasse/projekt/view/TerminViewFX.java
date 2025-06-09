@@ -1,3 +1,4 @@
+
 package at.spengergasse.projekt.view;
 
 import at.spengergasse.projekt.controller.TerminControllerFX;
@@ -8,16 +9,12 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-/**
- * TerminViewFX zeigt alle Termine in einer Tabelle mit Formular und Buttons.
- * Passt sich automatisch an die Breite an und verhindert horizontale Scrollbars.
- */
 public class TerminViewFX extends VBox {
 
     private final TerminControllerFX controller;
 
-    public TerminViewFX(String username, String pfad) {
-        this.controller = new TerminControllerFX(username, pfad);
+    public TerminViewFX(String username) {
+        this.controller = new TerminControllerFX(username);
 
         this.setSpacing(20);
         this.setPadding(new Insets(30));
@@ -25,7 +22,7 @@ public class TerminViewFX extends VBox {
         this.getStyleClass().add("termin-view");
 
         TableView<Termin> table = controller.getTable();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY); // <<< Verhindert horizontale Scrollbar
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setMaxWidth(Double.MAX_VALUE);
         VBox.setVgrow(table, Priority.ALWAYS);
 

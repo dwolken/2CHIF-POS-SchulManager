@@ -1,7 +1,9 @@
+
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.Termin;
 import at.spengergasse.projekt.model.CsvManager;
+import at.spengergasse.projekt.model.PfadManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -17,9 +19,8 @@ import java.util.Optional;
 public class TerminControllerFX {
 
     private final String username;
-    private final String pfad;
-    private final TableView<Termin> tableView;
     private final ObservableList<Termin> termine;
+    private final TableView<Termin> tableView;
 
     private final TextField titelField = new TextField();
     private final DatePicker datumPicker = new DatePicker();
@@ -28,9 +29,8 @@ public class TerminControllerFX {
     private final Button speichernButton = new Button("Speichern");
     private final Button löschenButton = new Button("Löschen");
 
-    public TerminControllerFX(String username, String pfad) {
+    public TerminControllerFX(String username) {
         this.username = username;
-        this.pfad = pfad;
         this.termine = FXCollections.observableArrayList();
         this.tableView = createTable();
         loadTermine();
@@ -137,7 +137,7 @@ public class TerminControllerFX {
 
             Optional<ButtonType> result = warnung.showAndWait();
             if (result.isEmpty() || result.get() == abbrechen) {
-                return; // Benutzer hat abgebrochen → raus
+                return;
             }
         }
 
@@ -151,7 +151,6 @@ public class TerminControllerFX {
         notizField.clear();
     }
 
-
     private void handleLöschen() {
         Termin ausgewählt = tableView.getSelectionModel().getSelectedItem();
         if (ausgewählt != null) {
@@ -162,6 +161,7 @@ public class TerminControllerFX {
 
     private void loadTermine() {
         try {
+            String pfad = PfadManager.getTerminPfad(username);
             termine.setAll(CsvManager.loadTermine(pfad));
         } catch (IOException e) {
             showFehler("Fehler beim Laden der Termine.");
@@ -170,6 +170,7 @@ public class TerminControllerFX {
 
     private void saveTermine() {
         try {
+            String pfad = PfadManager.getTerminPfad(username);
             CsvManager.saveTermine(termine, pfad);
         } catch (IOException e) {
             showFehler("Fehler beim Speichern der Termine.");

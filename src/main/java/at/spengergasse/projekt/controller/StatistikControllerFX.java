@@ -1,6 +1,7 @@
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.CsvManager;
+import at.spengergasse.projekt.model.PfadManager;
 import at.spengergasse.projekt.model.Termin;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class StatistikControllerFX {
      * @param username Benutzername
      */
     public StatistikControllerFX(String username) {
-        String pfad = System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
+        String pfad = PfadManager.getTerminPfad(username);
         List<Termin> geladen;
         try {
             geladen = CsvManager.loadTermine(pfad);

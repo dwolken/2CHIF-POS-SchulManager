@@ -122,6 +122,22 @@
     -fx-text-fill: white;
 }
 
+.scroll-bar:vertical {
+    -fx-opacity: 0;
+    -fx-max-width: 0;
+    -fx-pref-width: 0;
+    -fx-min-width: 0;
+}
+
+.scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+}
+
+
+
 /* === Footer / Statusleiste === */
 .footer {
     -fx-background-color: #2a2a2a;
@@ -137,3 +153,144 @@
     -fx-font-weight: bold;
     -fx-text-fill: #f5f5f5;
 }
+
+.statistik-view {
+    -fx-background-color: #1e1e1e;
+}
+
+.statistik-title {
+    -fx-text-fill: #ffffff;
+}
+
+.statistik-gesamt {
+    -fx-text-fill: #dddddd;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.chart-title, .chart-legend-item-symbol, .chart-legend-item {
+    -fx-text-fill: white;
+}
+
+.chart-pie-label {
+    -fx-fill: white;
+    -fx-font-weight: bold;
+}
+
+/* === Statistik Chart Legende im Dark Mode === */
+.chart-legend {
+    -fx-background-color: #2a2a2a;
+    -fx-border-color: #444;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 6px 10px;
+}
+
+.chart-legend-item {
+    -fx-text-fill: #f0f0f0;
+    -fx-font-size: 13px;
+}
+
+.chart-legend-item-symbol {
+    -fx-background-radius: 8px;
+    -fx-padding: 6px;
+    -fx-background-color: derive(-fx-pie-color, 0%); /* sorgt für die richtige Farbe */
+    -fx-border-color: #444;
+    -fx-border-width: 1;
+}
+/* === Schrift überall weiß === */
+.root,
+.label,
+.text,
+.text-field,
+.text-area,
+.list-view,
+.combo-box,
+.combo-box-base,
+.button,
+.table-view,
+.table-row-cell,
+.column-header {
+    -fx-text-fill: white;
+}
+
+/* === TableView: Spalten- & Zeilen-Trennung === */
+.table-view {
+    -fx-background-color: #2e2e2e;
+    -fx-border-color: #555;
+    -fx-table-cell-border-color: #555;
+    -fx-text-background-color: white;
+}
+
+.table-view .column-header {
+    -fx-background-color: #3a3a3a;
+    -fx-text-fill: white;
+    -fx-border-color: #666;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell {
+    -fx-background-color: #2e2e2e;
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+    -fx-border-width: 0 1 1 0; /* rechts + unten = Spalten + Zeilen */
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #444444;
+    -fx-text-fill: white;
+}
+
+/* === Einheitliches Styling für Textfelder, ComboBoxen, alles === */
+.text-field,
+.text-area,
+.combo-box,
+.combo-box-base {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #666;
+    -fx-border-width: 1px;
+    -fx-font-weight: normal;
+}
+
+/* === Speziell: ComboBox Liste und Pfeil === */
+.combo-box .arrow-button {
+    -fx-background-color: #444;
+}
+
+.combo-box .arrow-button:hover {
+    -fx-background-color: #666;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #444;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* === Placeholder-Text (PromptText) auch weiß machen === */
+.text-field:focused,
+.combo-box-base:focused,
+.text-area:focused {
+    -fx-prompt-text-fill: #ffffff;
+}
+
+.text-field,
+.combo-box-base,
+.text-area {
+    -fx-prompt-text-fill: #ffffff;
+}
+/* === ComboBox ausgewählter Wert (Anzeigefeld) === */
+.combo-box .list-cell {
+    -fx-text-fill: white;
+    -fx-background-color: #2a2a2a;
+    -fx-font-weight: normal;
+}
+
+

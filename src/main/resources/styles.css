@@ -91,9 +91,19 @@
     -fx-min-width: 0;
 }
 
-.scroll-bar:vertical {
+.scroll-bar:horizontal {
     -fx-opacity: 0;
-    -fx-max-width: 0;
-    -fx-pref-width: 0;
-    -fx-min-width: 0;
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+}
+
+.statistik-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.statistik-gesamt {
+    -fx-font-size: 16px;
+    -fx-padding: 10 0 0 0;
 }

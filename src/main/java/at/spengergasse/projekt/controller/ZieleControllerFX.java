@@ -1,8 +1,14 @@
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.Ziele;
+import at.spengergasse.projekt.model.PfadManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -15,18 +21,15 @@ import java.nio.file.Path;
 public class ZieleControllerFX {
 
     private final String username;
-    private final String pfad;
     private final ObservableList<Ziele> zieleListe;
 
     /**
      * Konstruktor für den Ziele-Controller.
      *
      * @param username Benutzername (nur zur Identifikation)
-     * @param pfad     Speicherpfad zur Ziel-Datei
      */
-    public ZieleControllerFX(String username, String pfad) {
+    public ZieleControllerFX(String username) {
         this.username = username;
-        this.pfad = pfad;
         this.zieleListe = FXCollections.observableArrayList();
         load();
     }
@@ -61,9 +64,75 @@ public class ZieleControllerFX {
     }
 
     /**
+     * Wird im Controller der View verwendet für die "Hinzufügen"-Schaltfläche.
+     */
+    public void handleAdd(TextField eingabeFeld) {
+        String text = eingabeFeld.getText().trim();
+        if (!text.isEmpty()) {
+            addZiel(new Ziele(text));
+            eingabeFeld.clear();
+        }
+    }
+
+    /**
+     * Wird im Controller der View verwendet für die "Löschen"-Schaltfläche.
+     */
+    public void handleRemove(ListView<Ziele> listView) {
+        Ziele selected = listView.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            removeZiel(selected);
+        }
+    }
+
+    /**
+     * Konfiguriert die Zell- und Auswahl-Logik der ListView.
+     * Hebt Auswahl bei Klick auf leere Zeile auf.
+     */
+    public void getAktionen(ListView<Ziele> listView) {
+        listView.setCellFactory(lv -> {
+            ListCell<Ziele> cell = new ListCell<>() {
+                private final CheckBox checkBox = new CheckBox();
+                private final HBox hBox = new HBox(10);
+
+                {
+                    hBox.setAlignment(Pos.CENTER_LEFT);
+                    hBox.getChildren().add(checkBox);
+
+                    this.setOnMouseClicked(event -> {
+                        if (isEmpty()) {
+                            listView.getSelectionModel().clearSelection();
+                        } else {
+                            listView.getSelectionModel().select(getIndex());
+                        }
+                    });
+                }
+
+                @Override
+                protected void updateItem(Ziele item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setGraphic(null);
+                    } else {
+                        checkBox.setText(item.getZielText());
+                        checkBox.setSelected(item.isErledigt());
+                        checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+                            item.setErledigt(newVal);
+                            save();
+                        });
+                        setGraphic(hBox);
+                    }
+                }
+            };
+            return cell;
+        });
+    }
+
+
+    /**
      * Lädt die Ziele aus der Datei.
      */
     private void load() {
+        String pfad = PfadManager.getZielePfad(username);
         Path path = Path.of(pfad);
         if (!Files.exists(path)) return;
 
@@ -86,6 +155,7 @@ public class ZieleControllerFX {
      * Speichert die aktuelle Liste in die Datei.
      */
     public void save() {
+        String pfad = PfadManager.getZielePfad(username);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(pfad))) {
             for (Ziele ziel : zieleListe) {
                 writer.write(ziel.isErledigt() + ";" + ziel.getZielText());

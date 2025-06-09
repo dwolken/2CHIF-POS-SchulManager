@@ -9,9 +9,10 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.List;
 
 /**
- * View für die Hauptanwendung inklusive Menü, Buttons, Footer und Controller-Anbindung.
+ * View für die Hauptanwendung inklusive Navigation, Menüs, Footer und Buttons.
  */
 public class MainViewFX {
 
@@ -20,7 +21,8 @@ public class MainViewFX {
     private Scene scene;
     private Label footerLabel;
 
-    public MainViewFX(Stage primaryStage, String username) {
+    public MainViewFX(Stage primaryStage, String username)
+    {
         this.controller = new MainControllerFX(this, username);
 
         root = new BorderPane();
@@ -29,13 +31,11 @@ public class MainViewFX {
         root.setTop(createNavigationBox());
         root.setBottom(createFooter(username));
         controller.updateFooter();
-        loadWelcomeCenter(username);
 
 
         scene = new Scene(root, 1120, 650);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         controller.loadDarkModeState(scene);
-
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("SchulManager - Willkommen " + username);
@@ -86,15 +86,12 @@ public class MainViewFX {
         Button btnStatistik = new Button("Statistik");
         Button btnZiele = new Button("Ziele");
 
-        btnHome.setMinWidth(150);
-        btnTermine.setMinWidth(150);
-        btnStatistik.setMinWidth(150);
-        btnZiele.setMinWidth(150);
-
-        btnHome.getStyleClass().add("button");
-        btnTermine.getStyleClass().add("button");
-        btnStatistik.getStyleClass().add("button");
-        btnZiele.getStyleClass().add("button");
+        for (Button btn : List.of(btnHome, btnTermine, btnStatistik, btnZiele)) {
+            btn.setMinWidth(200);
+            btn.setMinHeight(35);
+            btn.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+            btn.getStyleClass().add("button");
+        }
 
         btnHome.setOnAction(e -> loadWelcomeCenter(controller.getUsername()));
         btnTermine.setOnAction(controller::handleTermine);
@@ -134,13 +131,6 @@ public class MainViewFX {
         return footer;
     }
 
-    /**
-     * Aktualisiert den Footer und zeigt immer beide Speicherpfade an:
-     * einen für Termine und einen für Ziele. Wird unabhängig vom aktuellen View verwendet.
-     *
-     * @param pfadTermine Pfad zur Termine-Datei
-     * @param pfadZiele   Pfad zur Ziele-Datei
-     */
     public void setFooterPath(String pfadTermine, String pfadZiele) {
         if (footerLabel != null) {
             String pfadT = new File(pfadTermine).getParent();
@@ -148,7 +138,6 @@ public class MainViewFX {
             footerLabel.setText("Termine: " + pfadT + " | Ziele: " + pfadZ);
         }
     }
-
 
     public void setCenterContent(javafx.scene.Node node) {
         root.setCenter(node);
