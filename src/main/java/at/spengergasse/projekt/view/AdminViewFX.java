@@ -3,40 +3,34 @@ package at.spengergasse.projekt.view;
 import at.spengergasse.projekt.controller.AdminControllerFX;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.TableView;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
+import javafx.scene.layout.*;
 
 /**
  * View für den Admin-Modus. Zeigt Benutzerliste mit Bearbeitungsmöglichkeiten.
  */
 public class AdminViewFX extends VBox {
 
-    private final AdminControllerFX controller;
-
+    /**
+     * Initialisiert die Admin-Oberfläche.
+     */
     public AdminViewFX() {
-        this.controller = new AdminControllerFX();
+        setSpacing(10);
+        setPadding(new Insets(20));
 
-        this.setSpacing(20);
-        this.setPadding(new Insets(30));
-        this.setAlignment(Pos.TOP_CENTER);
-        this.getStyleClass().add("admin-view");
+        AdminControllerFX controller = new AdminControllerFX();
 
-        TableView<String[]> table = controller.getTable();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        table.setMaxWidth(Double.MAX_VALUE);
-        VBox.setVgrow(table, Priority.ALWAYS);
+        Label title = new Label("Benutzerverwaltung (Admin-Modus)");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
+        VBox tableBox = new VBox(controller.getTable());
+        VBox aktionenBox = new VBox(controller.getAktionen());
         VBox formularBox = new VBox(controller.getFormular());
-        formularBox.setAlignment(Pos.CENTER);
+        VBox logoutBox = new VBox(controller.getLogoutButton());
+        logoutBox.setPadding(new Insets(10));
+        logoutBox.setSpacing(10);
+        logoutBox.setAlignment(Pos.CENTER);
 
-        VBox buttonBox = new VBox(controller.getAktionen());
-        buttonBox.setAlignment(Pos.CENTER);
-
-        this.getChildren().addAll(table, formularBox, buttonBox);
-    }
-
-    public TableView<String[]> getTable() {
-        return controller.getTable();
+        getChildren().addAll(title, tableBox, aktionenBox, formularBox, logoutBox);
     }
 }

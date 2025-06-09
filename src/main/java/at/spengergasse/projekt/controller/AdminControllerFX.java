@@ -1,6 +1,7 @@
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.CsvManager;
+import at.spengergasse.projekt.view.LoginViewFX;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -8,12 +9,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Controller für Adminfunktionen: Benutzer anzeigen, erstellen und löschen.
+ * Controller für Adminfunktionen: Benutzer anzeigen, erstellen, löschen und abmelden.
  */
 public class AdminControllerFX {
 
@@ -24,6 +26,7 @@ public class AdminControllerFX {
     private final ComboBox<String> rolleBox = new ComboBox<>();
     private final Button löschenButton = new Button("Löschen");
     private final Button anlegenButton = new Button("Benutzer anlegen");
+    private final Button logoutButton = new Button("Abmelden");
 
     public AdminControllerFX() {
         this.benutzerListe = FXCollections.observableArrayList();
@@ -72,6 +75,15 @@ public class AdminControllerFX {
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(10));
         return box;
+    }
+
+    public Button getLogoutButton() {
+        logoutButton.setOnAction(e -> {
+            Stage currentStage = (Stage) logoutButton.getScene().getWindow();
+            currentStage.close();
+            new LoginViewFX(new Stage());
+        });
+        return logoutButton;
     }
 
     private TableView<String[]> createTable() {
