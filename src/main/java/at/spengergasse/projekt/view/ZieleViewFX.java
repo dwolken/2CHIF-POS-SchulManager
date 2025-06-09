@@ -5,6 +5,7 @@ import at.spengergasse.projekt.model.Ziele;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 
 /**
@@ -27,7 +28,17 @@ public class ZieleViewFX extends VBox {
         this.setAlignment(Pos.TOP_CENTER);
 
         listView = new ListView<>(controller.getZiele());
-        controller.getAktionen(listView);
+        controller.setupClickSelection(listView);
+
+
+        listView.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY) {
+                int clickedIndex = listView.getSelectionModel().getSelectedIndex();
+                if (clickedIndex < 0 || clickedIndex >= listView.getItems().size()) {
+                    listView.getSelectionModel().clearSelection();
+                }
+            }
+        });
 
         eingabeFeld = new TextField();
         eingabeFeld.setPromptText("Neues Ziel eingeben...");

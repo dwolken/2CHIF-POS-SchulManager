@@ -114,6 +114,15 @@ public class AdminControllerFX {
         }
 
         try {
+            if (CsvManager.userExists(name)) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Fehler");
+                alert.setHeaderText(null);
+                alert.setContentText("Benutzer existiert bereits.");
+                alert.showAndWait();
+                return;
+            }
+
             CsvManager.saveUser(name, pass, rolle);
             loadBenutzer();
             benutzernameField.clear();
@@ -123,6 +132,7 @@ public class AdminControllerFX {
             showFehler("Fehler beim Speichern.");
         }
     }
+
 
     private void handleLöschen() {
         String[] selected = table.getSelectionModel().getSelectedItem();

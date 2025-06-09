@@ -22,6 +22,17 @@ public class CsvManager {
                         .anyMatch(line -> line.startsWith(name + ";"));
     }
 
+    public static String getUserRole(String username) throws IOException {
+        List<String[]> lines = loadBenutzer();
+        for (String[] line : lines) {
+            if (line[0].equalsIgnoreCase(username)) {
+                return line[1];
+            }
+        }
+        return "user";
+    }
+
+
     /**
      * Überprüft, ob das Passwort korrekt ist.
      */
@@ -41,6 +52,8 @@ public class CsvManager {
         Files.write(Paths.get(BENUTZER_PFAD), (zeile + System.lineSeparator()).getBytes(),
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
+
+
 
     /**
      * Lädt alle Benutzer aus der Datei.
@@ -106,14 +119,4 @@ public class CsvManager {
             return "ERROR";
         }
     }
-    public static String getRolle(String username) throws IOException {
-        return Files.lines(Paths.get(BENUTZER_PFAD))
-                .filter(line -> line.startsWith(username + ";"))
-                .map(line -> line.split(";"))
-                .filter(parts -> parts.length >= 2)
-                .map(parts -> parts[1])
-                .findFirst()
-                .orElse("user");
-    }
-
 }

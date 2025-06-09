@@ -9,6 +9,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
+/**
+ * Haupt-Launcher-Klasse für den SchulManager.
+ * Startet die JavaFX-Anwendung.
+ */
 public class TerminViewFX extends VBox {
 
     private final TerminControllerFX controller;

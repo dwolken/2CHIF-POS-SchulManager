@@ -16,6 +16,10 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Optional;
 
+/**
+ * Haupt-Launcher-Klasse für den SchulManager.
+ * Startet die JavaFX-Anwendung.
+ */
 public class TerminControllerFX {
 
     private final String username;

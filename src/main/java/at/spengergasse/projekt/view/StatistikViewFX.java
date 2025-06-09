@@ -29,16 +29,11 @@ public class StatistikViewFX extends VBox {
         headline.setFont(new Font(20));
         headline.getStyleClass().add("statistik-title");
 
-        int pruefungen = controller.getAnzahlNachArt("Prüfung");
-        int hausaufgaben = controller.getAnzahlNachArt("Hausaufgabe");
-        int events = controller.getAnzahlNachArt("Event");
-        int sonstiges = controller.getAnzahlNachArt("Sonstiges");
-
         PieChart chart = new PieChart();
-        chart.getData().add(new PieChart.Data("Prüfungen", pruefungen));
-        chart.getData().add(new PieChart.Data("Hausaufgaben", hausaufgaben));
-        chart.getData().add(new PieChart.Data("Events", events));
-        chart.getData().add(new PieChart.Data("Sonstiges", sonstiges));
+        controller.getVerteilungNachArt().forEach((art, anzahl) -> {
+            chart.getData().add(new PieChart.Data(art, anzahl));
+        });
+
         chart.setLegendVisible(true);
         chart.setLabelsVisible(true);
         chart.setTitle("Verteilung nach Termin-Art");

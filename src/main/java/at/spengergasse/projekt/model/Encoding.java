@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
 /**
- * 
+ *
  * @author Leo Fanzott
  *
  */
@@ -32,7 +32,7 @@ public class Encoding {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param stringToEncode
 	 * @throws NoSuchAlgorithmException
 	 * @throws EncodingException
@@ -84,32 +84,32 @@ public class Encoding {
 	}
 
 	/**
-	 * 
+	 *
 	 * @throws NoSuchAlgorithmException
 	 */
 	private void setMessageDigest() throws NoSuchAlgorithmException {
 		md = null;
 		switch (encodingType) {
-		case SHA512:
-			md = MessageDigest.getInstance("SHA-512");
-			break;
-		case SHA384:
-			md = MessageDigest.getInstance("SHA-384");
-			break;
-		case SHA256:
-			md = MessageDigest.getInstance("SHA-256");
-			break;
-		case SHA1:
-			md = MessageDigest.getInstance("SHA-1");
-			break;
-		case MD5:
-			md = MessageDigest.getInstance("MD5");
-			break;
-		case MD2:
-			md = MessageDigest.getInstance("MD2");
-			break;
-		default:
-			throw new NoSuchAlgorithmException();
+			case SHA512:
+				md = MessageDigest.getInstance("SHA-512");
+				break;
+			case SHA384:
+				md = MessageDigest.getInstance("SHA-384");
+				break;
+			case SHA256:
+				md = MessageDigest.getInstance("SHA-256");
+				break;
+			case SHA1:
+				md = MessageDigest.getInstance("SHA-1");
+				break;
+			case MD5:
+				md = MessageDigest.getInstance("MD5");
+				break;
+			case MD2:
+				md = MessageDigest.getInstance("MD2");
+				break;
+			default:
+				throw new NoSuchAlgorithmException();
 		}
 
 	}
@@ -132,10 +132,10 @@ public class Encoding {
 		System.out.println("       Length:" + (i * 8) + " Bit"
 				+ "Encoding type: " + encodingType);
 	}
-	
+
 	/**
 	 * Hashcode as Bas64 string
-	 * 
+	 *
 	 * @return
 	 */
 	public String getHashcodeAsBase64String(){
@@ -159,15 +159,15 @@ public class Encoding {
 
 	/**
 	 * returns hashcode
-	 * 
+	 *
 	 * @return
 	 */
 	public byte[] getHashcode(){
-		return hash;		
+		return hash;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param args
 	 */
 	public static void main(String[] args) {

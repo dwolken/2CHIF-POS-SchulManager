@@ -1,5 +1,6 @@
 package at.spengergasse.projekt.controller;
 
+import at.spengergasse.projekt.view.AdminViewFX;
 import at.spengergasse.projekt.view.LoginViewFX;
 import at.spengergasse.projekt.view.MainViewFX;
 import at.spengergasse.projekt.model.CsvManager;
@@ -59,25 +60,31 @@ public class LoginControllerFX {
                 showError("Benutzer existiert nicht.");
                 return;
             }
+
             if (!CsvManager.isPasswordCorrect(username, password)) {
                 showError("Falsches Passwort.");
                 return;
             }
 
-            String rolle = CsvManager.getRolle(username); // aus CSV holen
+            String role = CsvManager.getUserRole(username);
 
-            if (rolle.equalsIgnoreCase("admin")) {
-                // Direkt AdminView starten
-                Stage adminStage = new Stage();
-                Scene adminScene = new Scene(new at.spengergasse.projekt.view.AdminViewFX(), 1120, 650);
-                adminScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm()); // CSS nicht vergessen
-                adminStage.setTitle("SchulManager - Willkommen admin");
-                adminStage.setScene(adminScene);
-                adminStage.show();
+            Stage newStage = new Stage();
+            if (role.equalsIgnoreCase("admin")) {
+                AdminViewFX adminView = new AdminViewFX();
+                Scene adminScene = new Scene(adminView, 600, 700);
+
+                adminScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+
+                newStage.setTitle("SchulManager - Willkommen admin");
+                newStage.setScene(adminScene);
+                newStage.show();
+
             } else {
-                // Normale MainView starten
-                new MainViewFX(new Stage(), username);
+                new MainViewFX(newStage, username); // funktioniert, weil dort das Stage selbst gesetzt wird
             }
+
+            view.getStage().close();
+
 
             view.getStage().close();
 
@@ -115,7 +122,6 @@ public class LoginControllerFX {
             showError("Fehler beim Speichern des Benutzers.");
         }
     }
-
 
     private void showError(String message) {
         Label errorLabel = view.getErrorLabel();

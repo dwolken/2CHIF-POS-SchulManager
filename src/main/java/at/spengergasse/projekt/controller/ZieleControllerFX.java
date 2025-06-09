@@ -85,48 +85,40 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Konfiguriert die Zell- und Auswahl-Logik der ListView.
-     * Hebt Auswahl bei Klick auf leere Zeile auf.
+     * Wird verwendet, um die Klick-Logik für die Auswahl umzusetzen.
      */
-    public void getAktionen(ListView<Ziele> listView) {
+    public void setupClickSelection(ListView<Ziele> listView) {
         listView.setCellFactory(lv -> {
             ListCell<Ziele> cell = new ListCell<>() {
-                private final CheckBox checkBox = new CheckBox();
-                private final HBox hBox = new HBox(10);
-
-                {
-                    hBox.setAlignment(Pos.CENTER_LEFT);
-                    hBox.getChildren().add(checkBox);
-
-                    this.setOnMouseClicked(event -> {
-                        if (isEmpty()) {
-                            listView.getSelectionModel().clearSelection();
-                        } else {
-                            listView.getSelectionModel().select(getIndex());
-                        }
-                    });
-                }
-
                 @Override
                 protected void updateItem(Ziele item, boolean empty) {
                     super.updateItem(item, empty);
                     if (empty || item == null) {
+                        setText(null);
                         setGraphic(null);
                     } else {
-                        checkBox.setText(item.getZielText());
+                        CheckBox checkBox = new CheckBox(item.getZielText());
                         checkBox.setSelected(item.isErledigt());
                         checkBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
                             item.setErledigt(newVal);
                             save();
                         });
-                        setGraphic(hBox);
+                        setGraphic(checkBox);
                     }
                 }
             };
+
+            cell.setOnMouseClicked(event -> {
+                if (!cell.isEmpty() && event.getButton() == MouseButton.PRIMARY) {
+                    listView.getSelectionModel().select(cell.getIndex());
+                } else if (cell.isEmpty()) {
+                    listView.getSelectionModel().clearSelection();
+                }
+            });
+
             return cell;
         });
     }
-
 
     /**
      * Lädt die Ziele aus der Datei.

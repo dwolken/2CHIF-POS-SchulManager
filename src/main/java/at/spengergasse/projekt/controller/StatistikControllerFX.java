@@ -5,7 +5,9 @@ import at.spengergasse.projekt.model.PfadManager;
 import at.spengergasse.projekt.model.Termin;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller zur Auswertung von Termin-Statistiken.
@@ -43,5 +45,18 @@ public class StatistikControllerFX {
         return (int) termine.stream()
                 .filter(t -> t.getArt().equalsIgnoreCase(art))
                 .count();
+    }
+
+    /**
+     * Zählt alle Arten von Terminen dynamisch.
+     * @return Map mit Art als Schlüssel und Häufigkeit als Wert
+     */
+    public Map<String, Integer> getVerteilungNachArt() {
+        Map<String, Integer> verteilung = new HashMap<>();
+        for (Termin t : termine) {
+            String art = t.getArt();
+            verteilung.put(art, verteilung.getOrDefault(art, 0) + 1);
+        }
+        return verteilung;
     }
 }

@@ -1,5 +1,9 @@
 package at.spengergasse.projekt.model;
 
+/**
+ * Haupt-Launcher-Klasse für den SchulManager.
+ * Startet die JavaFX-Anwendung.
+ */
 public class EncodingException extends Exception {
 
 	public EncodingException() {
@@ -22,7 +26,7 @@ public class EncodingException extends Exception {
 	}
 
 	public EncodingException(String arg0, Throwable arg1, boolean arg2,
-			boolean arg3) {
+							 boolean arg3) {
 		super(arg0, arg1, arg2, arg3);
 		// TODO Auto-generated constructor stub
 	}

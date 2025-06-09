@@ -21,8 +21,7 @@ public class MainViewFX {
     private Scene scene;
     private Label footerLabel;
 
-    public MainViewFX(Stage primaryStage, String username)
-    {
+    public MainViewFX(Stage primaryStage, String username) {
         this.controller = new MainControllerFX(this, username);
 
         root = new BorderPane();
@@ -31,7 +30,7 @@ public class MainViewFX {
         root.setTop(createNavigationBox());
         root.setBottom(createFooter(username));
         controller.updateFooter();
-
+        loadWelcomeCenter(username);
 
         scene = new Scene(root, 1120, 650);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());

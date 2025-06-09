@@ -4,6 +4,10 @@ package at.spengergasse.projekt.model;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Haupt-Launcher-Klasse für den SchulManager.
+ * Startet die JavaFX-Anwendung.
+ */
 public class PfadManager {
 
     private static final Map<String, String> terminPfadMap = new HashMap<>();
