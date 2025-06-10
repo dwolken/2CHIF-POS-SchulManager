@@ -31,7 +31,7 @@ public class AdminControllerFX {
     private final Button logoutButton = new Button("Abmelden");
 
     /**
-     * Konstruktor lädt alle Benutzer und initialisiert die Tabelle.
+     * Konstruktor: Initialisiert Benutzerliste und Tabelle.
      */
     public AdminControllerFX() {
         this.benutzerListe = FXCollections.observableArrayList();
@@ -40,16 +40,16 @@ public class AdminControllerFX {
     }
 
     /**
-     * Gibt die Tabelle zurück.
-     * @return Benutzer-Tabelle
+     * Gibt die Tabelle mit Benutzerdaten zurück.
+     * @return Tabelle mit Benutzern
      */
     public TableView<String[]> getTable() {
         return table;
     }
 
     /**
-     * Erstellt die HBox mit den Buttons "Passwort ändern" und "Löschen".
-     * @return HBox mit Aktionsbuttons
+     * Erstellt die Aktionsbuttons (Passwort ändern, Löschen) und deren Verhalten.
+     * @return HBox mit Buttons
      */
     public HBox getAktionen() {
         speichernButton.setDisable(true);
@@ -66,6 +66,8 @@ public class AdminControllerFX {
                 benutzernameField.setText(newVal[0]);
                 rolleBox.setValue(newVal[1]);
                 neuesPasswortField.clear();
+            } else {
+                clearFields();
             }
         });
 
@@ -76,6 +78,7 @@ public class AdminControllerFX {
                     table.getSelectionModel().clearSelection();
                     speichernButton.setDisable(true);
                     löschenButton.setDisable(true);
+                    clearFields();
                     return;
                 }
 
@@ -91,10 +94,11 @@ public class AdminControllerFX {
                         if (!neuerName.trim().isEmpty() && !neuerName.equals(selected[0])) {
                             try {
                                 String pass = neuesPasswortField.getText().trim();
-                                if (pass.isEmpty()) pass = "admin"; // fallback
+                                if (pass.isEmpty()) pass = "admin";
                                 CsvManager.deleteUser(selected[0]);
                                 CsvManager.saveUser(neuerName.trim(), pass, selected[1]);
                                 loadBenutzer();
+                                clearFields();
                             } catch (IOException ex) {
                                 showFehler("Fehler beim Umbenennen.");
                             }
@@ -112,8 +116,8 @@ public class AdminControllerFX {
     }
 
     /**
-     * Erstellt das Eingabeformular zur Benutzeranlage.
-     * @return HBox mit Eingabefeldern
+     * Erstellt das Formular zur Eingabe neuer Benutzer.
+     * @return HBox mit Formularfeldern
      */
     public HBox getFormular() {
         benutzernameField.setPromptText("Benutzername");
@@ -131,8 +135,8 @@ public class AdminControllerFX {
     }
 
     /**
-     * Liefert den Logout-Button und implementiert Logout-Verhalten.
-     * @return Button für Logout
+     * Gibt den Logout-Button mit Verhalten zurück.
+     * @return Logout-Button
      */
     public Button getLogoutButton() {
         logoutButton.setOnAction(e -> {
@@ -144,8 +148,8 @@ public class AdminControllerFX {
     }
 
     /**
-     * Erstellt die Tabelle mit den Benutzerdaten.
-     * @return TableView mit Spalten "Benutzername" und "Rolle"
+     * Erstellt die Tabelle mit Benutzername und Rolle.
+     * @return Benutzer-Tabelle
      */
     private TableView<String[]> createTable() {
         TableView<String[]> tableView = new TableView<>(benutzerListe);
@@ -165,7 +169,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Handhabt das Erstellen eines neuen Benutzers.
+     * Erzeugt einen neuen Benutzer.
      */
     private void handleNeuAnlegen() {
         String name = benutzernameField.getText().trim();
@@ -184,16 +188,14 @@ public class AdminControllerFX {
             }
             CsvManager.saveUser(name, pass, rolle);
             loadBenutzer();
-            benutzernameField.clear();
-            neuesPasswortField.clear();
-            rolleBox.setValue(null);
+            clearFields();
         } catch (IOException e) {
             showFehler("Fehler beim Speichern.");
         }
     }
 
     /**
-     * Handhabt das Zurücksetzen des Passworts eines Benutzers.
+     * Ändert das Passwort eines Benutzers.
      */
     private void handlePasswortAendern() {
         String[] selected = table.getSelectionModel().getSelectedItem();
@@ -213,13 +215,14 @@ public class AdminControllerFX {
             CsvManager.saveUser(name, neuesPass, rolle);
             loadBenutzer();
             table.getSelectionModel().clearSelection();
+            clearFields();
         } catch (IOException e) {
             showFehler("Fehler beim Aktualisieren.");
         }
     }
 
     /**
-     * Handhabt das Löschen eines Benutzers. Sperrt den aktuell eingeloggten Benutzer.
+     * Löscht den ausgewählten Benutzer (außer den eingeloggten).
      */
     private void handleLöschen() {
         String[] selected = table.getSelectionModel().getSelectedItem();
@@ -241,6 +244,7 @@ public class AdminControllerFX {
             try {
                 CsvManager.deleteUser(selected[0]);
                 loadBenutzer();
+                clearFields();
             } catch (IOException e) {
                 showFehler("Fehler beim Löschen.");
             }
@@ -248,7 +252,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Lädt alle Benutzer aus der CSV-Datei.
+     * Lädt Benutzerliste neu aus CSV-Datei.
      */
     private void loadBenutzer() {
         try {
@@ -259,7 +263,16 @@ public class AdminControllerFX {
     }
 
     /**
-     * Zeigt eine Fehlermeldung als Alert.
+     * Leert alle Eingabefelder.
+     */
+    private void clearFields() {
+        benutzernameField.clear();
+        neuesPasswortField.clear();
+        rolleBox.setValue(null);
+    }
+
+    /**
+     * Zeigt eine Fehlermeldung als Dialog.
      * @param msg Text der Fehlermeldung
      */
     private void showFehler(String msg) {
