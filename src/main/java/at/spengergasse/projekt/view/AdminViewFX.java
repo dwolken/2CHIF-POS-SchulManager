@@ -15,21 +15,26 @@ public class AdminViewFX extends VBox {
      * Initialisiert die Admin-Oberfläche.
      */
     public AdminViewFX() {
-        setSpacing(10);
-        setPadding(new Insets(20));
+        setSpacing(15);
+        setPadding(new Insets(30));
 
         AdminControllerFX controller = new AdminControllerFX();
 
         Label title = new Label("Benutzerverwaltung (Admin-Modus)");
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+        title.setAlignment(Pos.CENTER);
 
         VBox tableBox = new VBox(controller.getTable());
         VBox aktionenBox = new VBox(controller.getAktionen());
         VBox formularBox = new VBox(controller.getFormular());
         VBox logoutBox = new VBox(controller.getLogoutButton());
-        logoutBox.setPadding(new Insets(10));
+
+        tableBox.setSpacing(10);
+        formularBox.setSpacing(10);
+        aktionenBox.setSpacing(10);
         logoutBox.setSpacing(10);
         logoutBox.setAlignment(Pos.CENTER);
+        logoutBox.setPadding(new Insets(10));
 
         getChildren().addAll(title, tableBox, aktionenBox, formularBox, logoutBox);
     }

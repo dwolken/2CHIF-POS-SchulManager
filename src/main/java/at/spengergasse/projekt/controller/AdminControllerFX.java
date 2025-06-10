@@ -15,17 +15,17 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Controller für Adminfunktionen: Benutzer anzeigen, erstellen, löschen und abmelden.
+ * Controller für Adminfunktionen: Benutzer anzeigen, erstellen, bearbeiten, löschen und abmelden.
  */
 public class AdminControllerFX {
 
     private final ObservableList<String[]> benutzerListe;
     private final TableView<String[]> table;
     private final TextField benutzernameField = new TextField();
-    private final PasswordField passwortField = new PasswordField();
+    private final PasswordField neuesPasswortField = new PasswordField();
     private final ComboBox<String> rolleBox = new ComboBox<>();
+    private final Button speichernButton = new Button("Passwort ändern");
     private final Button löschenButton = new Button("Löschen");
-    private final Button anlegenButton = new Button("Benutzer anlegen");
     private final Button logoutButton = new Button("Abmelden");
 
     public AdminControllerFX() {
@@ -39,11 +39,21 @@ public class AdminControllerFX {
     }
 
     public HBox getAktionen() {
+        speichernButton.setDisable(true);
         löschenButton.setDisable(true);
+
+        speichernButton.setOnAction(e -> handlePasswortAendern());
         löschenButton.setOnAction(e -> handleLöschen());
 
         table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            löschenButton.setDisable(newVal == null);
+            boolean selected = newVal != null;
+            speichernButton.setDisable(!selected);
+            löschenButton.setDisable(!selected);
+            if (selected) {
+                benutzernameField.setText(newVal[0]);
+                rolleBox.setValue(newVal[1]);
+                neuesPasswortField.clear();
+            }
         });
 
         table.setRowFactory(tv -> {
@@ -51,13 +61,14 @@ public class AdminControllerFX {
             row.setOnMouseClicked(event -> {
                 if (row.isEmpty()) {
                     table.getSelectionModel().clearSelection();
+                    speichernButton.setDisable(true);
                     löschenButton.setDisable(true);
                 }
             });
             return row;
         });
 
-        HBox box = new HBox(10, löschenButton);
+        HBox box = new HBox(10, speichernButton, löschenButton);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(10));
         return box;
@@ -65,13 +76,14 @@ public class AdminControllerFX {
 
     public HBox getFormular() {
         benutzernameField.setPromptText("Benutzername");
-        passwortField.setPromptText("Passwort");
+        neuesPasswortField.setPromptText("Neues Passwort setzen");
         rolleBox.getItems().setAll("user", "admin");
         rolleBox.setPromptText("Rolle wählen");
 
-        anlegenButton.setOnAction(e -> handleAnlegen());
+        Button neuButton = new Button("Neu anlegen");
+        neuButton.setOnAction(e -> handleNeuAnlegen());
 
-        HBox box = new HBox(10, benutzernameField, passwortField, rolleBox, anlegenButton);
+        HBox box = new HBox(10, benutzernameField, neuesPasswortField, rolleBox, neuButton);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(10));
         return box;
@@ -103,9 +115,9 @@ public class AdminControllerFX {
         return tableView;
     }
 
-    private void handleAnlegen() {
+    private void handleNeuAnlegen() {
         String name = benutzernameField.getText().trim();
-        String pass = passwortField.getText().trim();
+        String pass = neuesPasswortField.getText().trim();
         String rolle = rolleBox.getValue();
 
         if (name.isEmpty() || pass.isEmpty() || rolle == null) {
@@ -115,24 +127,41 @@ public class AdminControllerFX {
 
         try {
             if (CsvManager.userExists(name)) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Fehler");
-                alert.setHeaderText(null);
-                alert.setContentText("Benutzer existiert bereits.");
-                alert.showAndWait();
+                showFehler("Benutzer existiert bereits.");
                 return;
             }
-
             CsvManager.saveUser(name, pass, rolle);
             loadBenutzer();
             benutzernameField.clear();
-            passwortField.clear();
+            neuesPasswortField.clear();
             rolleBox.setValue(null);
         } catch (IOException e) {
             showFehler("Fehler beim Speichern.");
         }
     }
 
+    private void handlePasswortAendern() {
+        String[] selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        String name = selected[0];
+        String neuesPass = neuesPasswortField.getText().trim();
+        String rolle = selected[1];
+
+        if (neuesPass.isEmpty()) {
+            showFehler("Bitte neues Passwort eingeben.");
+            return;
+        }
+
+        try {
+            CsvManager.deleteUser(name);
+            CsvManager.saveUser(name, neuesPass, rolle);
+            loadBenutzer();
+            table.getSelectionModel().clearSelection();
+        } catch (IOException e) {
+            showFehler("Fehler beim Aktualisieren.");
+        }
+    }
 
     private void handleLöschen() {
         String[] selected = table.getSelectionModel().getSelectedItem();
