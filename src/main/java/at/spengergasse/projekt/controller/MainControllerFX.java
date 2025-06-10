@@ -18,7 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Controller für die Hauptanwendung. Verbindet UI-Events mit Logik.
+ * Controller für die Hauptanwendung. Verbindet UI-Events mit Anwendungslogik
+ * und verwaltet Benutzerinteraktionen im Hauptfenster.
  */
 public class MainControllerFX {
 
@@ -26,34 +27,62 @@ public class MainControllerFX {
     private final String username;
     private boolean darkModeAktiv = false;
 
+    /**
+     * Konstruktor für den MainControllerFX.
+     * @param view Die zugehörige View-Instanz.
+     * @param username Der aktuell eingeloggte Benutzername.
+     */
     public MainControllerFX(MainViewFX view, String username) {
         this.view = view;
         this.username = username;
     }
 
+    /**
+     * Aktualisiert den Footer-Pfad mit aktuellen Datei-Pfaden für Termine und Ziele.
+     */
     public void updateFooter() {
         view.setFooterPath(PfadManager.getTerminPfad(username), PfadManager.getZielePfad(username));
     }
 
+    /**
+     * Gibt den Benutzernamen zurück.
+     * @return Aktueller Benutzername.
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Zeigt die Termin-Ansicht.
+     * @param e Event vom Button-Klick.
+     */
     public void handleTermine(ActionEvent e) {
         view.setCenterContent(new TerminViewFX(username));
         updateFooter();
     }
 
+    /**
+     * Zeigt die Statistik-Ansicht.
+     * @param e Event vom Button-Klick.
+     */
     public void handleStatistik(ActionEvent e) {
         view.setCenterContent(new StatistikViewFX(username));
         updateFooter();
     }
 
+    /**
+     * Zeigt die Ziele-Ansicht.
+     * @param e Event vom Button-Klick.
+     */
     public void handleZiele(ActionEvent e) {
         view.setCenterContent(new ZieleViewFX(username));
         updateFooter();
     }
 
+    /**
+     * Öffnet eine neue Instanz der Anwendung (nur bei JAR-Datei).
+     * @param e Event vom Menüeintrag.
+     */
     public void handleNeueInstanz(ActionEvent e) {
         try {
             File jarFile = new File(MainControllerFX.class.getProtectionDomain().getCodeSource().getLocation().toURI());
@@ -68,6 +97,10 @@ public class MainControllerFX {
         }
     }
 
+    /**
+     * Ermöglicht dem Benutzer, den Speicherpfad für Termine zu ändern.
+     * @param e Event vom Menüeintrag.
+     */
     public void handlePfadAendernTermine(ActionEvent e) {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Neuen Speicherort wählen (Termine)");
@@ -85,6 +118,10 @@ public class MainControllerFX {
         }
     }
 
+    /**
+     * Ermöglicht dem Benutzer, den Speicherpfad für Ziele zu ändern.
+     * @param e Event vom Menüeintrag.
+     */
     public void handlePfadAendernZiele(ActionEvent e) {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Neuen Speicherort wählen (Ziele)");
@@ -102,6 +139,10 @@ public class MainControllerFX {
         }
     }
 
+    /**
+     * Setzt die Speicherpfade für Termine und Ziele auf die Standardwerte zurück.
+     * @param e Event vom Menüeintrag.
+     */
     public void handlePfadZuruecksetzen(ActionEvent e) {
         String defaultTermine = PfadManager.getDefaultTerminPfad(username);
         String defaultZiele = PfadManager.getDefaultZielePfad(username);
@@ -116,6 +157,10 @@ public class MainControllerFX {
         updateFooter();
     }
 
+    /**
+     * Setzt die gesamte Benutzerumgebung zurück und löscht gespeicherte Daten.
+     * @param e Event vom Menüeintrag.
+     */
     public void handleZuruecksetzen(ActionEvent e) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Willst du wirklich ALLES zurücksetzen? Alle Termine und Ziele werden gelöscht.");
         Optional<ButtonType> result = confirm.showAndWait();
@@ -133,11 +178,20 @@ public class MainControllerFX {
         }
     }
 
+    /**
+     * Führt den Logout durch und zeigt das Login-Fenster erneut.
+     * @param e Event vom Menüeintrag.
+     */
     public void handleLogout(ActionEvent e) {
         ((Stage) ((Button) e.getSource()).getScene().getWindow()).close();
         new LoginViewFX(new Stage());
     }
 
+    /**
+     * Schaltet den Dark Mode um und speichert die Einstellung.
+     * @param item Das Menüelement zur Umschaltung.
+     * @param scene Die aktuelle Szene.
+     */
     public void handleToggleDarkMode(MenuItem item, Scene scene) {
         darkModeAktiv = !darkModeAktiv;
         scene.getStylesheets().clear();
@@ -147,6 +201,9 @@ public class MainControllerFX {
         saveDarkModeState();
     }
 
+    /**
+     * Speichert den Dark-Mode-Zustand in einer Konfigurationsdatei.
+     */
     public void saveDarkModeState() {
         try {
             File file = new File(System.getProperty("user.home") + "/SchulManager/data/" + username + "_config.properties");
@@ -157,6 +214,10 @@ public class MainControllerFX {
         }
     }
 
+    /**
+     * Lädt die gespeicherte Dark-Mode-Einstellung beim Start.
+     * @param scene Die aktuelle Szene.
+     */
     public void loadDarkModeState(Scene scene) {
         try {
             File file = new File(System.getProperty("user.home") + "/SchulManager/data/" + username + "_config.properties");
@@ -170,6 +231,10 @@ public class MainControllerFX {
         }
     }
 
+    /**
+     * Importiert Termine aus einer externen CSV-Datei.
+     * @param e Event vom Menüeintrag.
+     */
     public void handleTermineLaden(ActionEvent e) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Termine importieren");
@@ -190,6 +255,10 @@ public class MainControllerFX {
         }
     }
 
+    /**
+     * Importiert Ziele aus einer CSV-Datei.
+     * @param e Event vom Menüeintrag.
+     */
     public void handleZieleLaden(ActionEvent e) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Ziele importieren");

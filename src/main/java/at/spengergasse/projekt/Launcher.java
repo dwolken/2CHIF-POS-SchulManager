@@ -3,10 +3,15 @@ package at.spengergasse.projekt;
 import javafx.application.Application;
 
 /**
- * Haupt-Launcher-Klasse für den SchulManager.
- * Startet die JavaFX-Anwendung.
+ * Einstiegspunkt für den SchulManager.
+ * Diese Klasse startet die JavaFX-Anwendung über {@link MainApplicationFX}.
  */
 public class Launcher {
+
+    /**
+     * Main-Methode zum Starten der Anwendung.
+     * @param args Kommandozeilenargumente
+     */
     public static void main(String[] args) {
         Application.launch(MainApplicationFX.class, args);
     }

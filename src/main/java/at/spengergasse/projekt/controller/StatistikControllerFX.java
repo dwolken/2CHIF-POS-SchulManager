@@ -11,14 +11,17 @@ import java.util.Map;
 
 /**
  * Controller zur Auswertung von Termin-Statistiken.
+ * Stellt Funktionen zur Analyse der gespeicherten Termine bereit,
+ * z.B. Gesamtanzahl, Verteilung nach Art etc.
  */
 public class StatistikControllerFX {
 
     private final List<Termin> termine;
 
     /**
-     * Lädt alle Termine des Benutzers.
-     * @param username Benutzername
+     * Konstruktor: Lädt alle Termine des angegebenen Benutzers.
+     *
+     * @param username Benutzername, dessen Termin-Datei geladen werden soll.
      */
     public StatistikControllerFX(String username) {
         String pfad = PfadManager.getTerminPfad(username);
@@ -32,14 +35,20 @@ public class StatistikControllerFX {
     }
 
     /**
-     * Gesamtanzahl aller Termine
+     * Gibt die Gesamtanzahl aller geladenen Termine zurück.
+     *
+     * @return Anzahl aller Termine.
      */
     public int getGesamtAnzahl() {
         return termine.size();
     }
 
     /**
-     * Anzahl der Termine nach Art (z. B. "Prüfung")
+     * Zählt, wie viele Termine eine bestimmte Art haben.
+     * Die Vergleich erfolgt ohne Beachtung der Groß-/Kleinschreibung.
+     *
+     * @param art Die Art von Termin (z.B. "Prüfung", "Meeting").
+     * @return Anzahl der Termine mit dieser Art.
      */
     public int getAnzahlNachArt(String art) {
         return (int) termine.stream()
@@ -48,8 +57,9 @@ public class StatistikControllerFX {
     }
 
     /**
-     * Zählt alle Arten von Terminen dynamisch.
-     * @return Map mit Art als Schlüssel und Häufigkeit als Wert
+     * Erstellt eine Verteilung aller Terminarten.
+     *
+     * @return Map mit Terminart als Schlüssel und Anzahl als Wert.
      */
     public Map<String, Integer> getVerteilungNachArt() {
         Map<String, Integer> verteilung = new HashMap<>();

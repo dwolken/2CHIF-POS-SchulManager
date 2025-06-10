@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 /**
  * Statische Hilfsklasse zur Datei-Verarbeitung für Benutzer- und Termindaten.
+ * Unterstützt CSV-basierte Speicherung und einfache Datenmanipulation.
  */
 public class CsvManager {
 
@@ -15,6 +16,10 @@ public class CsvManager {
 
     /**
      * Prüft, ob ein Benutzer mit dem angegebenen Namen existiert.
+     *
+     * @param name Benutzername
+     * @return true, wenn ein Benutzer mit diesem Namen existiert
+     * @throws IOException bei Datei- oder Lesefehlern
      */
     public static boolean userExists(String name) throws IOException {
         return Files.exists(Paths.get(BENUTZER_PFAD)) &&
@@ -22,6 +27,14 @@ public class CsvManager {
                         .anyMatch(line -> line.startsWith(name + ";"));
     }
 
+    /**
+     * Gibt die Rolle eines Benutzers zurück.
+     * Falls keine explizite Rolle gespeichert ist, wird "user" angenommen.
+     *
+     * @param username Benutzername
+     * @return Rolle des Benutzers ("admin", "user", etc.)
+     * @throws IOException bei Datei- oder Lesefehlern
+     */
     public static String getUserRole(String username) throws IOException {
         List<String[]> lines = loadBenutzer();
         for (String[] line : lines) {
@@ -32,9 +45,13 @@ public class CsvManager {
         return "user";
     }
 
-
     /**
-     * Überprüft, ob das Passwort korrekt ist.
+     * Prüft, ob das eingegebene Passwort mit dem gespeicherten Hash übereinstimmt.
+     *
+     * @param name Benutzername
+     * @param plainPassword Das eingegebene Klartextpasswort
+     * @return true, wenn das Passwort korrekt ist
+     * @throws IOException bei Datei- oder Lesefehlern
      */
     public static boolean isPasswordCorrect(String name, String plainPassword) throws IOException {
         return Files.lines(Paths.get(BENUTZER_PFAD))
@@ -45,7 +62,12 @@ public class CsvManager {
     }
 
     /**
-     * Speichert neuen Benutzer in der CSV-Datei.
+     * Speichert einen neuen Benutzer mit verschlüsseltem Passwort.
+     *
+     * @param name Benutzername
+     * @param password Passwort im Klartext
+     * @param rolle Benutzerrolle (z.B. "user", "admin")
+     * @throws IOException bei Schreibfehlern
      */
     public static void saveUser(String name, String password, String rolle) throws IOException {
         String zeile = name + ";" + rolle + ";" + encodeString(password);
@@ -53,10 +75,11 @@ public class CsvManager {
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
 
-
-
     /**
-     * Lädt alle Benutzer aus der Datei.
+     * Lädt alle Benutzerzeilen als String-Arrays.
+     *
+     * @return Liste von Benutzerzeilen (Array: [Name, Rolle, (Passwort)])
+     * @throws IOException bei Datei- oder Lesefehlern
      */
     public static List<String[]> loadBenutzer() throws IOException {
         if (!Files.exists(Paths.get(BENUTZER_PFAD))) return new ArrayList<>();
@@ -67,7 +90,10 @@ public class CsvManager {
     }
 
     /**
-     * Entfernt Benutzer anhand des Namens aus der Datei.
+     * Löscht einen Benutzer aus der Datei.
+     *
+     * @param name Benutzername, der gelöscht werden soll
+     * @throws IOException bei Datei- oder Schreibfehlern
      */
     public static void deleteUser(String name) throws IOException {
         if (!Files.exists(Paths.get(BENUTZER_PFAD))) return;
@@ -79,8 +105,12 @@ public class CsvManager {
     }
 
     /**
-     * Lädt eine Liste von Terminen aus einer CSV-Datei.
-     * Unterstützt auch Zeilen ohne Notiz (leeres Feld).
+     * Lädt Terminobjekte aus einer CSV-Datei.
+     * Jede Zeile wird als Termin interpretiert.
+     *
+     * @param pfad Pfad zur CSV-Datei
+     * @return Liste der geladenen Termine
+     * @throws IOException bei Lese- oder Formatfehlern
      */
     public static List<Termin> loadTermine(String pfad) throws IOException {
         if (!Files.exists(Paths.get(pfad))) return new ArrayList<>();
@@ -97,7 +127,11 @@ public class CsvManager {
     }
 
     /**
-     * Speichert alle Termine als CSV in die angegebene Datei.
+     * Speichert eine Liste von Terminen in eine CSV-Datei.
+     *
+     * @param termine Liste von Termin-Objekten
+     * @param pfad Speicherpfad für die CSV-Datei
+     * @throws IOException bei Schreibfehlern
      */
     public static void saveTermine(List<Termin> termine, String pfad) throws IOException {
         List<String> lines = termine.stream()
@@ -107,9 +141,10 @@ public class CsvManager {
     }
 
     /**
-     * Kodiert einen String mit SHA-256 über die Encoding-Klasse.
-     * @param input Der Eingabestring
-     * @return Der Hash als hex-String
+     * Kodiert einen String mit SHA-256.
+     *
+     * @param input Eingabestring
+     * @return SHA-256-Hash als Hex-String
      */
     public static String encodeString(String input) {
         try {

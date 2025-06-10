@@ -1,4 +1,3 @@
-
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.Termin;
@@ -17,8 +16,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 /**
- * Haupt-Launcher-Klasse für den SchulManager.
- * Startet die JavaFX-Anwendung.
+ * Controller zur Verwaltung und Anzeige von Terminen in der SchulManager-App.
+ * Bietet Funktionen zum Speichern, Bearbeiten und Löschen von Terminen.
  */
 public class TerminControllerFX {
 
@@ -33,6 +32,11 @@ public class TerminControllerFX {
     private final Button speichernButton = new Button("Speichern");
     private final Button löschenButton = new Button("Löschen");
 
+    /**
+     * Erstellt einen neuen Controller und lädt die Termine für den Benutzer.
+     *
+     * @param username Aktueller Benutzername.
+     */
     public TerminControllerFX(String username) {
         this.username = username;
         this.termine = FXCollections.observableArrayList();
@@ -40,10 +44,20 @@ public class TerminControllerFX {
         loadTermine();
     }
 
+    /**
+     * Gibt die Tabelle mit den Terminen zurück.
+     *
+     * @return TableView mit Termin-Objekten.
+     */
     public TableView<Termin> getTable() {
         return tableView;
     }
 
+    /**
+     * Erstellt das Eingabeformular zur Erstellung eines neuen Termins.
+     *
+     * @return HBox mit Eingabefeldern und Speichern-Button.
+     */
     public HBox getFormular() {
         titelField.setPromptText("Titel");
         datumPicker.setPromptText("Datum");
@@ -59,6 +73,11 @@ public class TerminControllerFX {
         return box;
     }
 
+    /**
+     * Erstellt die Aktionsleiste mit dem Löschen-Button und zugehörigem Verhalten.
+     *
+     * @return HBox mit Lösch-Funktionalität.
+     */
     public HBox getAktionen() {
         löschenButton.setDisable(true);
         löschenButton.setOnAction(e -> handleLöschen());
@@ -84,6 +103,11 @@ public class TerminControllerFX {
         return box;
     }
 
+    /**
+     * Erstellt und konfiguriert die Tabelle zur Anzeige der Termine.
+     *
+     * @return Eine vollständig konfigurierte TableView.
+     */
     private TableView<Termin> createTable() {
         TableView<Termin> table = new TableView<>(termine);
         table.setEditable(true);
@@ -118,6 +142,10 @@ public class TerminControllerFX {
         return table;
     }
 
+    /**
+     * Verarbeitet das Speichern eines neuen Termins nach Validierung.
+     * Zeigt Warnung bei vergangenem Datum.
+     */
     private void handleSpeichern() {
         String titel = titelField.getText().trim();
         LocalDate datum = datumPicker.getValue();
@@ -155,6 +183,9 @@ public class TerminControllerFX {
         notizField.clear();
     }
 
+    /**
+     * Löscht den aktuell ausgewählten Termin aus der Tabelle.
+     */
     private void handleLöschen() {
         Termin ausgewählt = tableView.getSelectionModel().getSelectedItem();
         if (ausgewählt != null) {
@@ -163,6 +194,9 @@ public class TerminControllerFX {
         }
     }
 
+    /**
+     * Lädt alle gespeicherten Termine des aktuellen Benutzers.
+     */
     private void loadTermine() {
         try {
             String pfad = PfadManager.getTerminPfad(username);
@@ -172,6 +206,9 @@ public class TerminControllerFX {
         }
     }
 
+    /**
+     * Speichert alle aktuellen Termine in die entsprechende CSV-Datei.
+     */
     private void saveTermine() {
         try {
             String pfad = PfadManager.getTerminPfad(username);
@@ -181,6 +218,11 @@ public class TerminControllerFX {
         }
     }
 
+    /**
+     * Zeigt eine Fehlermeldung in einem Alert-Dialog.
+     *
+     * @param msg Die anzuzeigende Fehlermeldung.
+     */
     private void showFehler(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Fehler");

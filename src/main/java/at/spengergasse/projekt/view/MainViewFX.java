@@ -12,7 +12,8 @@ import java.io.File;
 import java.util.List;
 
 /**
- * View für die Hauptanwendung inklusive Navigation, Menüs, Footer und Buttons.
+ * View für die Hauptanwendung inklusive Navigation, Menüleiste, Footer und Hauptbuttons.
+ * Diese Klasse stellt das Hauptfenster dar, in dem alle Inhalte dynamisch geladen werden.
  */
 public class MainViewFX {
 
@@ -21,6 +22,12 @@ public class MainViewFX {
     private Scene scene;
     private Label footerLabel;
 
+    /**
+     * Konstruktor: Initialisiert die MainView mit Menü, Buttons und Footer.
+     *
+     * @param primaryStage Das JavaFX-Fenster (Stage)
+     * @param username     Der aktuell eingeloggte Benutzername
+     */
     public MainViewFX(Stage primaryStage, String username) {
         this.controller = new MainControllerFX(this, username);
 
@@ -42,9 +49,15 @@ public class MainViewFX {
         primaryStage.show();
     }
 
+    /**
+     * Erstellt die obere Navigationsbox mit Menüleiste und großen Hauptbuttons.
+     *
+     * @return VBox mit Menü und Button-Leiste
+     */
     private VBox createNavigationBox() {
         VBox container = new VBox();
 
+        // Menüleiste
         MenuBar menuBar = new MenuBar();
 
         Menu dateiMenu = new Menu("Datei");
@@ -76,6 +89,7 @@ public class MainViewFX {
 
         menuBar.getMenus().addAll(dateiMenu, fensterMenu, einstellungenMenu);
 
+        // Hauptbuttons
         HBox buttonBox = new HBox(15);
         buttonBox.setPadding(new Insets(10));
         buttonBox.setAlignment(Pos.CENTER);
@@ -102,6 +116,11 @@ public class MainViewFX {
         return container;
     }
 
+    /**
+     * Zeigt die Startansicht mit Willkommensnachricht.
+     *
+     * @param username Aktueller Benutzername
+     */
     public void loadWelcomeCenter(String username) {
         VBox centerBox = new VBox(20);
         centerBox.setAlignment(Pos.CENTER);
@@ -111,6 +130,12 @@ public class MainViewFX {
         root.setCenter(centerBox);
     }
 
+    /**
+     * Erstellt den unteren Footerbereich mit Benutzerinfo, Speicherpfad und Logout-Button.
+     *
+     * @param username Aktueller Benutzername
+     * @return HBox mit Footer-Inhalt
+     */
     private HBox createFooter(String username) {
         HBox footer = new HBox(10);
         footer.setPadding(new Insets(8));
@@ -130,6 +155,12 @@ public class MainViewFX {
         return footer;
     }
 
+    /**
+     * Aktualisiert die Pfadanzeige im Footer mit den aktuellen Speicherorten.
+     *
+     * @param pfadTermine Pfad zur Termin-Datei
+     * @param pfadZiele   Pfad zur Ziele-Datei
+     */
     public void setFooterPath(String pfadTermine, String pfadZiele) {
         if (footerLabel != null) {
             String pfadT = new File(pfadTermine).getParent();
@@ -138,10 +169,20 @@ public class MainViewFX {
         }
     }
 
+    /**
+     * Setzt den Inhalt des Center-Bereichs im Hauptfenster.
+     *
+     * @param node Das anzuzeigende UI-Element (z. B. TerminViewFX)
+     */
     public void setCenterContent(javafx.scene.Node node) {
         root.setCenter(node);
     }
 
+    /**
+     * Gibt die aktuelle Scene zurück (z.B. für Theme-Umschaltung).
+     *
+     * @return Die JavaFX Scene
+     */
     public Scene getScene() {
         return root.getScene();
     }

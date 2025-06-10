@@ -7,12 +7,15 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 
 /**
- * View für den Admin-Modus. Zeigt Benutzerliste mit Bearbeitungsmöglichkeiten.
+ * View für den Admin-Modus.
+ * Zeigt die Benutzerverwaltung mit Tabelle, Eingabeformular,
+ * Bearbeitungsoptionen und Logout-Schaltfläche.
  */
 public class AdminViewFX extends VBox {
 
     /**
-     * Initialisiert die Admin-Oberfläche.
+     * Konstruktor: Initialisiert die Admin-Oberfläche.
+     * Lädt alle Bestandteile der Benutzerverwaltung (Tabelle, Buttons, Formular).
      */
     public AdminViewFX() {
         setSpacing(15);

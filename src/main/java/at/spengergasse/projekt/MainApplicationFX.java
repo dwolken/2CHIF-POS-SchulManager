@@ -5,8 +5,8 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 
 /**
- * Einstiegspunkt der Anwendung. Startet das JavaFX-Framework
- * und öffnet das Login-Fenster.
+ * Einstiegspunkt der JavaFX-Anwendung für den SchulManager.
+ * Startet das JavaFX-Framework und öffnet das Login-Fenster.
  */
 public class MainApplicationFX extends Application {
 
@@ -22,7 +22,8 @@ public class MainApplicationFX extends Application {
     }
 
     /**
-     * Main-Methode zum Starten der JavaFX-Anwendung
+     * Main-Methode zum Starten der JavaFX-Anwendung.
+     *
      * @param args Kommandozeilenargumente
      */
     public static void main(String[] args) {

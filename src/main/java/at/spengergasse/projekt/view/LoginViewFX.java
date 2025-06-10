@@ -13,6 +13,7 @@ import java.net.URL;
 /**
  * Diese Klasse stellt das Login- und Registrierungsfenster dar.
  * Sie erlaubt das Anmelden eines bestehenden Benutzers oder das Erstellen eines neuen Accounts.
+ * Das Layout ist JavaFX-basiert und nutzt einen zugehörigen Controller zur Event-Verarbeitung.
  */
 public class LoginViewFX {
 
@@ -26,6 +27,7 @@ public class LoginViewFX {
 
     /**
      * Konstruktor, der das Login-Fenster mit zugehörigem Controller initialisiert.
+     *
      * @param primaryStage Hauptfenster der Anwendung
      */
     public LoginViewFX(Stage primaryStage) {
@@ -41,7 +43,9 @@ public class LoginViewFX {
     }
 
     /**
-     * Erstellt die Login-Ansicht mit Formularen für Anmeldung und Registrierung.
+     * Erstellt die grafische Benutzeroberfläche des Login-Fensters.
+     * Enthält Felder für Benutzername und Passwort sowie Login-/Registrieren-Buttons.
+     * Außerdem wird ein Hinweis auf den Standardspeicherpfad angezeigt.
      */
     private void createLoginScene() {
         VBox root = new VBox(20);
@@ -57,7 +61,6 @@ public class LoginViewFX {
         errorLabel.getStyleClass().add("error-label");
         errorLabel.setVisible(false);
 
-        // Info: Wo werden die Dateien gespeichert?
         String standardPfad = System.getProperty("user.home") + File.separator + "SchulManager" + File.separator + "data";
         Label pfadLabel = new Label("Standard-Speicherpfad: " + standardPfad);
         pfadLabel.setWrapText(true);
@@ -81,11 +84,57 @@ public class LoginViewFX {
         controller.setupEventHandling(scene);
     }
 
-    // Getter für Controller-Zugriff
-    public TextField getUsernameField() { return usernameField; }
-    public PasswordField getPasswordField() { return passwordField; }
-    public Label getErrorLabel() { return errorLabel; }
-    public Stage getStage() { return stage; }
-    public Button getLoginButton() { return loginButton; }
-    public Button getRegisterButton() { return registerButton; }
+    /**
+     * Gibt das Textfeld für den Benutzernamen zurück.
+     *
+     * @return TextField für Benutzername
+     */
+    public TextField getUsernameField() {
+        return usernameField;
+    }
+
+    /**
+     * Gibt das Passwortfeld zurück.
+     *
+     * @return PasswordField für Passwort
+     */
+    public PasswordField getPasswordField() {
+        return passwordField;
+    }
+
+    /**
+     * Gibt das Fehler-Label zurück.
+     *
+     * @return Label für Fehlermeldungen
+     */
+    public Label getErrorLabel() {
+        return errorLabel;
+    }
+
+    /**
+     * Gibt das zugehörige Fenster (Stage) zurück.
+     *
+     * @return JavaFX Stage
+     */
+    public Stage getStage() {
+        return stage;
+    }
+
+    /**
+     * Gibt den Login-Button zurück.
+     *
+     * @return Button für Login
+     */
+    public Button getLoginButton() {
+        return loginButton;
+    }
+
+    /**
+     * Gibt den Registrieren-Button zurück.
+     *
+     * @return Button für Registrierung
+     */
+    public Button getRegisterButton() {
+        return registerButton;
+    }
 }

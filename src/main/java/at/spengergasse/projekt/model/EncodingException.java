@@ -1,34 +1,57 @@
 package at.spengergasse.projekt.model;
 
 /**
- * Haupt-Launcher-Klasse für den SchulManager.
- * Startet die JavaFX-Anwendung.
+ * Eigene Exception-Klasse für Fehler bei der Encoding-Verarbeitung.
+ * Wird z.B. ausgelöst bei ungültigen Algorithmen oder fehlerhaften Eingaben.
  */
 public class EncodingException extends Exception {
 
+	/**
+	 * Standard-Konstruktor ohne Nachricht.
+	 */
 	public EncodingException() {
-		// TODO Auto-generated constructor stub
+		super();
 	}
 
-	public EncodingException(String arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	/**
+	 * Konstruktor mit Fehlermeldung.
+	 *
+	 * @param message Beschreibende Fehlermeldung
+	 */
+	public EncodingException(String message) {
+		super(message);
 	}
 
-	public EncodingException(Throwable arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	/**
+	 * Konstruktor mit Ursache.
+	 *
+	 * @param cause Die zugrunde liegende Exception
+	 */
+	public EncodingException(Throwable cause) {
+		super(cause);
 	}
 
-	public EncodingException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
+	/**
+	 * Konstruktor mit Nachricht und Ursache.
+	 *
+	 * @param message Beschreibende Fehlermeldung
+	 * @param cause   Die zugrunde liegende Exception
+	 */
+	public EncodingException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	public EncodingException(String arg0, Throwable arg1, boolean arg2,
-							 boolean arg3) {
-		super(arg0, arg1, arg2, arg3);
-		// TODO Auto-generated constructor stub
+	/**
+	 * Erweiterter Konstruktor mit Kontrolle über Suppression und StackTrace.
+	 *
+	 * @param message            Fehlermeldung
+	 * @param cause              Ursache
+	 * @param enableSuppression  Suppression unterdrücken
+	 * @param writableStackTrace StackTrace beschreibbar?
+	 */
+	public EncodingException(String message, Throwable cause,
+							 boolean enableSuppression,
+							 boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
-
 }

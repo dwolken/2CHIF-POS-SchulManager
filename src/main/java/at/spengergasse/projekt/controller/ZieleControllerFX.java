@@ -6,9 +6,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.HBox;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -16,7 +13,7 @@ import java.nio.file.Path;
 
 /**
  * Controller für die Ziele-Ansicht.
- * Verwaltet das Laden, Speichern und Bearbeiten der Ziel-Daten.
+ * Verwaltet das Laden, Speichern und Bearbeiten der Ziel-Daten eines Benutzers.
  */
 public class ZieleControllerFX {
 
@@ -26,7 +23,7 @@ public class ZieleControllerFX {
     /**
      * Konstruktor für den Ziele-Controller.
      *
-     * @param username Benutzername (nur zur Identifikation)
+     * @param username Benutzername (zur Pfadzuordnung)
      */
     public ZieleControllerFX(String username) {
         this.username = username;
@@ -35,18 +32,18 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Gibt die ObservableList mit den aktuellen Zielen zurück.
+     * Gibt die aktuelle Liste aller Ziele zurück.
      *
-     * @return Liste der Ziele
+     * @return ObservableList mit Zielobjekten.
      */
     public ObservableList<Ziele> getZiele() {
         return zieleListe;
     }
 
     /**
-     * Fügt ein neues Ziel hinzu und speichert die Liste.
+     * Fügt ein neues Ziel zur Liste hinzu und speichert die Datei.
      *
-     * @param ziel Das neue Ziel
+     * @param ziel Das hinzuzufügende Ziel.
      */
     public void addZiel(Ziele ziel) {
         zieleListe.add(ziel);
@@ -54,9 +51,9 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Entfernt ein Ziel aus der Liste und speichert.
+     * Entfernt ein Ziel aus der Liste und speichert die Datei.
      *
-     * @param ziel Das Ziel, das entfernt werden soll
+     * @param ziel Zielobjekt, das entfernt werden soll.
      */
     public void removeZiel(Ziele ziel) {
         zieleListe.remove(ziel);
@@ -64,7 +61,10 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Wird im Controller der View verwendet für die "Hinzufügen"-Schaltfläche.
+     * Handler für den Hinzufügen-Button.
+     * Liest den Text aus dem Eingabefeld und erstellt ein neues Ziel.
+     *
+     * @param eingabeFeld Textfeld mit dem Zieltext.
      */
     public void handleAdd(TextField eingabeFeld) {
         String text = eingabeFeld.getText().trim();
@@ -75,7 +75,10 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Wird im Controller der View verwendet für die "Löschen"-Schaltfläche.
+     * Handler für den Löschen-Button.
+     * Entfernt das aktuell ausgewählte Ziel.
+     *
+     * @param listView Die ListView mit den Zielen.
      */
     public void handleRemove(ListView<Ziele> listView) {
         Ziele selected = listView.getSelectionModel().getSelectedItem();
@@ -85,7 +88,10 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Wird verwendet, um die Klick-Logik für die Auswahl umzusetzen.
+     * Richtet die Click-Logik ein, um eine Zielauswahl durch Klick zu ermöglichen
+     * und erlaubt das direkte Abhaken per Checkbox.
+     *
+     * @param listView Die ListView mit Ziel-Elementen.
      */
     public void setupClickSelection(ListView<Ziele> listView) {
         listView.setCellFactory(lv -> {
@@ -121,7 +127,8 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Lädt die Ziele aus der Datei.
+     * Lädt alle Ziele aus der zugehörigen Datei.
+     * Falls Datei nicht existiert, passiert nichts.
      */
     private void load() {
         String pfad = PfadManager.getZielePfad(username);
@@ -144,7 +151,7 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Speichert die aktuelle Liste in die Datei.
+     * Speichert alle aktuellen Ziele in die zugehörige Datei.
      */
     public void save() {
         String pfad = PfadManager.getZielePfad(username);

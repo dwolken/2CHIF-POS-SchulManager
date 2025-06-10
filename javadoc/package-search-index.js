@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"at.spengergasse.projekt"},{"l":"at.spengergasse.projekt.controller"},{"l":"at.spengergasse.projekt.model"},{"l":"at.spengergasse.projekt.view"}];updateSearchResults();
