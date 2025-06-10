@@ -1,9 +1,10 @@
 package at.spengergasse.projekt.controller;
 
+import at.spengergasse.projekt.model.CsvManager;
+import at.spengergasse.projekt.model.PfadManager;
 import at.spengergasse.projekt.view.AdminViewFX;
 import at.spengergasse.projekt.view.LoginViewFX;
 import at.spengergasse.projekt.view.MainViewFX;
-import at.spengergasse.projekt.model.CsvManager;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -24,11 +25,13 @@ public class LoginControllerFX {
 
     /**
      * Konstruktor für den LoginControllerFX.
+     * Initialisiert die View und lädt Pfade aus Datei.
      *
      * @param view  Die LoginViewFX, die die Benutzeroberfläche enthält.
-     * @param stage Das JavaFX-Stage-Fenster, das aktuell angezeigt wird.
+     * @param stage Das aktuelle JavaFX-Stage-Fenster.
      */
     public LoginControllerFX(LoginViewFX view, Stage stage) {
+        PfadManager.loadPfade();
         this.view = view;
         this.stage = stage;
     }
@@ -80,9 +83,10 @@ public class LoginControllerFX {
             }
 
             String role = CsvManager.getUserRole(username);
-
             Stage newStage = new Stage();
+
             if (role.equalsIgnoreCase("admin")) {
+                System.setProperty("aktuellerUser", username);
                 AdminViewFX adminView = new AdminViewFX();
                 Scene adminScene = new Scene(adminView, 600, 700);
                 adminScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
@@ -90,10 +94,11 @@ public class LoginControllerFX {
                 newStage.setScene(adminScene);
                 newStage.show();
             } else {
+                System.setProperty("aktuellerUser", username);
                 new MainViewFX(newStage, username);
             }
 
-            view.getStage().close();
+            stage.close();
 
         } catch (IOException ex) {
             showError("Fehler beim Laden der Benutzerdaten.");
@@ -114,6 +119,7 @@ public class LoginControllerFX {
             showError("Bitte alle Felder ausfüllen.");
             return;
         }
+
         if (username.equalsIgnoreCase("admin")) {
             showError("Der Benutzername 'admin' ist reserviert.");
             return;
@@ -127,7 +133,7 @@ public class LoginControllerFX {
 
             CsvManager.saveUser(username, password, "user");
             new MainViewFX(new Stage(), username);
-            view.getStage().close();
+            stage.close();
 
         } catch (IOException ex) {
             showError("Fehler beim Speichern des Benutzers.");

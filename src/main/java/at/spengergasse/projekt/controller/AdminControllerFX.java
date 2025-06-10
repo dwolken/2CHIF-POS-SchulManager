@@ -15,53 +15,23 @@ import java.io.IOException;
 import java.util.Optional;
 
 /**
- * Dieser Controller verwaltet die Admin-Oberfläche zur Benutzerverwaltung.
- * Funktionen: Benutzer anzeigen, hinzufügen, Passwort ändern, löschen und Logout.
+ * Controller für die Admin-Benutzerverwaltung.
+ * Ermöglicht das Anzeigen, Bearbeiten und Löschen von Benutzern.
+ * Unterstützt Passwortänderungen und Benutzernamenänderungen per Doppelklick.
  */
 public class AdminControllerFX {
 
-    /**
-     * Liste aller Benutzer als ObservableList.
-     */
     private final ObservableList<String[]> benutzerListe;
-
-    /**
-     * Tabelle zur Anzeige der Benutzer.
-     */
     private final TableView<String[]> table;
-
-    /**
-     * Eingabefeld für den Benutzernamen.
-     */
     private final TextField benutzernameField = new TextField();
-
-    /**
-     * Eingabefeld für ein neues Passwort (PasswordField).
-     */
     private final PasswordField neuesPasswortField = new PasswordField();
-
-    /**
-     * Auswahlfeld für die Benutzerrolle (user/admin).
-     */
     private final ComboBox<String> rolleBox = new ComboBox<>();
-
-    /**
-     * Button zum Ändern des Passworts eines bestehenden Benutzers.
-     */
     private final Button speichernButton = new Button("Passwort ändern");
-
-    /**
-     * Button zum Löschen eines Benutzers.
-     */
     private final Button löschenButton = new Button("Löschen");
-
-    /**
-     * Button zum Abmelden (zurück zur LoginView).
-     */
     private final Button logoutButton = new Button("Abmelden");
 
     /**
-     * Konstruktor initialisiert Tabelle und lädt Benutzerliste.
+     * Konstruktor lädt alle Benutzer und initialisiert die Tabelle.
      */
     public AdminControllerFX() {
         this.benutzerListe = FXCollections.observableArrayList();
@@ -70,16 +40,16 @@ public class AdminControllerFX {
     }
 
     /**
-     * Gibt die Benutzer-Tabelle zurück.
-     * @return TableView mit Benutzerdaten
+     * Gibt die Tabelle zurück.
+     * @return Benutzer-Tabelle
      */
     public TableView<String[]> getTable() {
         return table;
     }
 
     /**
-     * Erstellt HBox mit Buttons für "Passwort ändern" und "Löschen".
-     * @return HBox mit Aktionen
+     * Erstellt die HBox mit den Buttons "Passwort ändern" und "Löschen".
+     * @return HBox mit Aktionsbuttons
      */
     public HBox getAktionen() {
         speichernButton.setDisable(true);
@@ -106,6 +76,30 @@ public class AdminControllerFX {
                     table.getSelectionModel().clearSelection();
                     speichernButton.setDisable(true);
                     löschenButton.setDisable(true);
+                    return;
+                }
+
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    String[] selected = row.getItem();
+                    TextInputDialog dialog = new TextInputDialog(selected[0]);
+                    dialog.setTitle("Benutzername ändern");
+                    dialog.setHeaderText(null);
+                    dialog.setContentText("Neuer Benutzername:");
+
+                    Optional<String> result = dialog.showAndWait();
+                    result.ifPresent(neuerName -> {
+                        if (!neuerName.trim().isEmpty() && !neuerName.equals(selected[0])) {
+                            try {
+                                String pass = neuesPasswortField.getText().trim();
+                                if (pass.isEmpty()) pass = "admin"; // fallback
+                                CsvManager.deleteUser(selected[0]);
+                                CsvManager.saveUser(neuerName.trim(), pass, selected[1]);
+                                loadBenutzer();
+                            } catch (IOException ex) {
+                                showFehler("Fehler beim Umbenennen.");
+                            }
+                        }
+                    });
                 }
             });
             return row;
@@ -118,8 +112,8 @@ public class AdminControllerFX {
     }
 
     /**
-     * Erstellt das Eingabeformular für Benutzername, Passwort und Rolle.
-     * @return HBox mit Formularfeldern
+     * Erstellt das Eingabeformular zur Benutzeranlage.
+     * @return HBox mit Eingabefeldern
      */
     public HBox getFormular() {
         benutzernameField.setPromptText("Benutzername");
@@ -137,8 +131,8 @@ public class AdminControllerFX {
     }
 
     /**
-     * Gibt den Logout-Button zurück. Schließt aktuelles Fenster und öffnet Login.
-     * @return Logout-Button
+     * Liefert den Logout-Button und implementiert Logout-Verhalten.
+     * @return Button für Logout
      */
     public Button getLogoutButton() {
         logoutButton.setOnAction(e -> {
@@ -150,8 +144,8 @@ public class AdminControllerFX {
     }
 
     /**
-     * Erstellt die Tabelle für Benutzername und Rolle.
-     * @return konfigurierte TableView
+     * Erstellt die Tabelle mit den Benutzerdaten.
+     * @return TableView mit Spalten "Benutzername" und "Rolle"
      */
     private TableView<String[]> createTable() {
         TableView<String[]> tableView = new TableView<>(benutzerListe);
@@ -171,14 +165,14 @@ public class AdminControllerFX {
     }
 
     /**
-     * Handhabt das Anlegen eines neuen Benutzers.
+     * Handhabt das Erstellen eines neuen Benutzers.
      */
     private void handleNeuAnlegen() {
         String name = benutzernameField.getText().trim();
         String pass = neuesPasswortField.getText().trim();
         String rolle = rolleBox.getValue();
 
-        if (name.isEmpty() || pass.isEmpty() || rolle == null) {
+        if (name.isEmpty() || pass.isEmpty() || rolle == null || rolle.isEmpty()) {
             showFehler("Bitte alle Felder ausfüllen.");
             return;
         }
@@ -225,11 +219,17 @@ public class AdminControllerFX {
     }
 
     /**
-     * Handhabt das Löschen eines Benutzers nach Bestätigung.
+     * Handhabt das Löschen eines Benutzers. Sperrt den aktuell eingeloggten Benutzer.
      */
     private void handleLöschen() {
         String[] selected = table.getSelectionModel().getSelectedItem();
         if (selected == null) return;
+
+        String aktuellerUser = System.getProperty("aktuellerUser");
+        if (selected[0].equals(aktuellerUser)) {
+            showFehler("Du kannst dich nicht selbst löschen.");
+            return;
+        }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Löschen bestätigen");
@@ -248,7 +248,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Lädt die Benutzerdaten aus der CSV-Datei.
+     * Lädt alle Benutzer aus der CSV-Datei.
      */
     private void loadBenutzer() {
         try {
@@ -259,7 +259,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Zeigt eine Fehlermeldung als Alert an.
+     * Zeigt eine Fehlermeldung als Alert.
      * @param msg Text der Fehlermeldung
      */
     private void showFehler(String msg) {
