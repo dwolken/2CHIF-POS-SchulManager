@@ -117,39 +117,47 @@ public class CsvManager {
         Files.write(Paths.get(BENUTZER_PFAD), filtered, StandardCharsets.UTF_8);
     }
 
-    /**
-     * Lädt alle Termine aus einer Datei und klassifiziert sie automatisch.
-     *
-     * @param pfad Pfad zur CSV-Datei
-     * @return Liste von {@code Termin}-Objekten
-     * @throws IOException Bei Datei- oder Formatfehlern
-     */
     public static List<Termin> loadTermine(String pfad) throws IOException {
         if (!Files.exists(Paths.get(pfad))) return new ArrayList<>();
 
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(pfad), StandardCharsets.UTF_8)) {
-            return reader.lines()
-                    .map(line -> line.split(";"))
-                    .filter(p -> p.length >= 3)
-                    .map(p -> {
-                        String titel = p[0];
-                        LocalDate datum = LocalDate.parse(p[1]);
+            List<Termin> termine = new ArrayList<>();
+            int zeileNr = 0;
 
-                        String rawArt = p[2].toLowerCase();
-                        String art = switch (rawArt) {
-                            case "prüfung", "test", "sa", "schularbeit" -> "Prüfung";
-                            case "hausaufgabe", "hausübung", "übung", "hw" -> "Hausaufgabe";
-                            case "event", "veranstaltung", "termin" -> "Event";
-                            case "präsentation", "sonstiges", "diverses" -> "Sonstiges";
-                            default -> "Sonstiges";
-                        };
+            while (reader.ready()) {
+                String line = reader.readLine();
+                zeileNr++;
 
-                        String notiz = p.length >= 4 ? p[3] : "";
-                        return new Termin(titel, datum, art, notiz);
-                    })
-                    .collect(Collectors.toList());
+                if (line.trim().isEmpty()) continue;
+
+                String[] p = line.split(";", -1);
+                if (p.length < 3 || p.length > 4) {
+                    throw new IOException("Ungültiges Format in Termine-Datei (Zeile " + zeileNr + "): " + line);
+                }
+
+                String titel = p[0].trim();
+                LocalDate datum;
+                try {
+                    datum = LocalDate.parse(p[1].trim());
+                } catch (Exception e) {
+                    throw new IOException("Ungültiges Datum in Termine-Datei (Zeile " + zeileNr + "): " + p[1]);
+                }
+
+                String art = switch (p[2].trim().toLowerCase()) {
+                    case "prüfung", "test", "sa", "schularbeit" -> "Prüfung";
+                    case "hausaufgabe", "hausübung", "übung", "hw", "hü" -> "Hausaufgabe";
+                    case "event", "veranstaltung", "termin" -> "Event";
+                    default -> "Sonstiges";
+                };
+
+                String notiz = p.length == 4 ? p[3].trim() : "";
+                termine.add(new Termin(titel, datum, art, notiz));
+            }
+
+            return termine;
         }
     }
+
 
     /**
      * Speichert eine Liste von Terminen als CSV-Datei im UTF-8 Format.
@@ -208,13 +216,13 @@ public class CsvManager {
     }
 
     /**
-     * Lädt eine Liste von Zielen aus einer UTF-8-codierten CSV-Datei.
-     * Jede Zeile muss das Format {@code erledigt;zieltext} haben.
-     * Leere oder fehlerhafte Zeilen werden übersprungen.
+     * Lädt Ziele aus einer Datei im UTF-8-Format.
+     * Jede Zeile im Format: {@code erledigt;zieltext}
+     * Leere oder ungültige Zeilen werden ignoriert.
      *
-     * @param pfad Pfad zur CSV-Datei
+     * @param pfad Pfad zur Zieldatei
      * @return Liste von {@code Ziele}-Objekten
-     * @throws IOException Wenn beim Lesen ein Fehler auftritt
+     * @throws IOException Bei Lese- oder Formatfehlern
      */
     public static List<Ziele> loadZiele(String pfad) throws IOException {
         List<Ziele> liste = new ArrayList<>();
@@ -223,12 +231,16 @@ public class CsvManager {
 
         try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             String line;
+            int zeileNr = 0;
             while ((line = reader.readLine()) != null) {
+                zeileNr++;
                 line = line.trim();
-                if (line.isEmpty()) continue; // leere Zeile überspringen
+                if (line.isEmpty()) continue;
 
                 String[] parts = line.split(";", 2);
-                if (parts.length != 2) continue; // unvollständige Zeile überspringen
+                if (parts.length != 2 || !(parts[0].equalsIgnoreCase("true") || parts[0].equalsIgnoreCase("false"))) {
+                    throw new IOException("Ungültiges Format in Ziele-Datei (Zeile " + zeileNr + "): " + line);
+                }
 
                 boolean erledigt = Boolean.parseBoolean(parts[0].trim());
                 String text = parts[1].trim();
@@ -238,6 +250,7 @@ public class CsvManager {
 
         return liste;
     }
+
 
     /**
      * Speichert eine Liste von Zielen im UTF-8-Format ohne BOM.
