@@ -284,7 +284,7 @@ public class AdminControllerFX {
 
             Optional<ButtonType> auswahl = detail.showAndWait();
 
-            if (auswahl.isPresent()) {
+            if (auswahl.isPresent() && auswahl.get() != abbrechen) {
                 try {
                     CsvManager.deleteUser(selected[0]);
 
