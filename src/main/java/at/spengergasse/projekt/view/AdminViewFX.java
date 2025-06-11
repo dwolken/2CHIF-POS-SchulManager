@@ -4,18 +4,21 @@ import at.spengergasse.projekt.controller.AdminControllerFX;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.*;
+import javafx.scene.layout.VBox;
 
 /**
- * View für den Admin-Modus.
- * Zeigt die Benutzerverwaltung mit Tabelle, Eingabeformular,
- * Bearbeitungsoptionen und Logout-Schaltfläche.
+ * AdminViewFX stellt die Benutzeroberfläche für Administratoren dar.
+ * Sie enthält:
+ * - Eine Tabelle aller Benutzer
+ * - Eingabeformulare zur Benutzerverwaltung
+ * - Aktionen wie Löschen oder Umbenennen
+ * - Einen Logout-Button
  */
 public class AdminViewFX extends VBox {
 
     /**
-     * Konstruktor: Initialisiert die Admin-Oberfläche.
-     * Lädt alle Bestandteile der Benutzerverwaltung (Tabelle, Buttons, Formular).
+     * Konstruktor: Initialisiert die grafische Oberfläche für den Admin-Modus.
+     * Fügt alle UI-Komponenten wie Tabelle, Formular und Buttons zusammen.
      */
     public AdminViewFX() {
         setSpacing(15);
@@ -35,6 +38,7 @@ public class AdminViewFX extends VBox {
         tableBox.setSpacing(10);
         formularBox.setSpacing(10);
         aktionenBox.setSpacing(10);
+
         logoutBox.setSpacing(10);
         logoutBox.setAlignment(Pos.CENTER);
         logoutBox.setPadding(new Insets(10));

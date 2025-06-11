@@ -8,12 +8,19 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Controller für die Ziele-Ansicht.
- * Verwaltet das Laden, Speichern und Bearbeiten der Ziel-Daten eines Benutzers.
+ * Der {@code ZieleControllerFX} verwaltet alle Ziele eines Benutzers innerhalb der Anwendung.
+ * <p>
+ * Verantwortlich für:
+ * <ul>
+ *     <li>Hinzufügen und Entfernen von Zielen</li>
+ *     <li>Speichern und Laden im CSV-Format</li>
+ *     <li>GUI-Interaktion via {@code ListView} und {@code CheckBox}</li>
+ * </ul>
  */
 public class ZieleControllerFX {
 
@@ -21,9 +28,9 @@ public class ZieleControllerFX {
     private final ObservableList<Ziele> zieleListe;
 
     /**
-     * Konstruktor für den Ziele-Controller.
+     * Konstruktor initialisiert Benutzerkontext und lädt vorhandene Ziele.
      *
-     * @param username Benutzername (zur Pfadzuordnung)
+     * @param username Der aktuelle Benutzername
      */
     public ZieleControllerFX(String username) {
         this.username = username;
@@ -32,28 +39,30 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Gibt die aktuelle Liste aller Ziele zurück.
+     * Gibt die aktuell gehaltene Liste der Ziele zurück.
      *
-     * @return ObservableList mit Zielobjekten.
+     * @return ObservableList mit {@code Ziele}-Objekten
      */
     public ObservableList<Ziele> getZiele() {
         return zieleListe;
     }
 
     /**
-     * Fügt ein neues Ziel zur Liste hinzu und speichert die Datei.
+     * Fügt ein Ziel zur Liste hinzu, wenn es noch nicht existiert, und speichert.
      *
-     * @param ziel Das hinzuzufügende Ziel.
+     * @param ziel Das hinzuzufügende Ziel
      */
     public void addZiel(Ziele ziel) {
-        zieleListe.add(ziel);
-        save();
+        if (!zieleListe.contains(ziel)) {
+            zieleListe.add(ziel);
+            save();
+        }
     }
 
     /**
-     * Entfernt ein Ziel aus der Liste und speichert die Datei.
+     * Entfernt ein Ziel aus der Liste und speichert den neuen Zustand.
      *
-     * @param ziel Zielobjekt, das entfernt werden soll.
+     * @param ziel Das zu entfernende Ziel
      */
     public void removeZiel(Ziele ziel) {
         zieleListe.remove(ziel);
@@ -61,10 +70,9 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Handler für den Hinzufügen-Button.
-     * Liest den Text aus dem Eingabefeld und erstellt ein neues Ziel.
+     * Verarbeitet Eingaben aus einem {@code TextField} und fügt neues Ziel hinzu.
      *
-     * @param eingabeFeld Textfeld mit dem Zieltext.
+     * @param eingabeFeld Eingabefeld für Zieltext
      */
     public void handleAdd(TextField eingabeFeld) {
         String text = eingabeFeld.getText().trim();
@@ -75,10 +83,9 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Handler für den Löschen-Button.
-     * Entfernt das aktuell ausgewählte Ziel.
+     * Entfernt das aktuell selektierte Ziel aus der {@code ListView}.
      *
-     * @param listView Die ListView mit den Zielen.
+     * @param listView Die GUI-ListView mit Zielen
      */
     public void handleRemove(ListView<Ziele> listView) {
         Ziele selected = listView.getSelectionModel().getSelectedItem();
@@ -88,10 +95,10 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Richtet die Click-Logik ein, um eine Zielauswahl durch Klick zu ermöglichen
-     * und erlaubt das direkte Abhaken per Checkbox.
+     * Richtet die grafische Darstellung und Interaktion für Ziele in der ListView ein.
+     * Dazu gehören Checkboxen zum Abhaken und Klickverhalten.
      *
-     * @param listView Die ListView mit Ziel-Elementen.
+     * @param listView Die Ziel-ListView aus der GUI
      */
     public void setupClickSelection(ListView<Ziele> listView) {
         listView.setCellFactory(lv -> {
@@ -127,39 +134,50 @@ public class ZieleControllerFX {
     }
 
     /**
-     * Lädt alle Ziele aus der zugehörigen Datei.
-     * Falls Datei nicht existiert, passiert nichts.
+     * Lädt Ziele aus der Datei des jeweiligen Benutzers.
+     * Erwartet UTF-8-Codierung, Format: {@code erledigt;zieltext}.
+     * Leere oder ungültige Zeilen werden ignoriert.
      */
     private void load() {
         String pfad = PfadManager.getZielePfad(username);
         Path path = Path.of(pfad);
         if (!Files.exists(path)) return;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(pfad))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new FileInputStream(pfad), StandardCharsets.UTF_8))) {
+
             String line;
             while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+
                 String[] parts = line.split(";", 2);
                 if (parts.length == 2) {
-                    boolean erledigt = Boolean.parseBoolean(parts[0]);
-                    String text = parts[1];
+                    boolean erledigt = Boolean.parseBoolean(parts[0].trim());
+                    String text = parts[1].trim();
                     zieleListe.add(new Ziele(text, erledigt));
                 }
             }
+
         } catch (IOException e) {
             System.err.println("Fehler beim Laden der Ziele-Datei.");
         }
     }
 
     /**
-     * Speichert alle aktuellen Ziele in die zugehörige Datei.
+     * Speichert die aktuelle Zielliste in die benutzerbezogene Datei.
+     * UTF-8-Codierung, Format pro Zeile: {@code erledigt;zieltext}
      */
     public void save() {
         String pfad = PfadManager.getZielePfad(username);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(pfad))) {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(pfad), StandardCharsets.UTF_8))) {
+
             for (Ziele ziel : zieleListe) {
                 writer.write(ziel.isErledigt() + ";" + ziel.getZielText());
                 writer.newLine();
             }
+
         } catch (IOException e) {
             System.err.println("Fehler beim Speichern der Ziele-Datei.");
         }

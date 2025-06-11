@@ -10,18 +10,24 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Controller zur Auswertung von Termin-Statistiken.
- * Stellt Funktionen zur Analyse der gespeicherten Termine bereit,
- * z.B. Gesamtanzahl, Verteilung nach Art etc.
+ * Der {@code StatistikControllerFX} analysiert und wertet gespeicherte Termine aus.
+ * <p>
+ * Er bietet Methoden zur:
+ * <ul>
+ *     <li>Ermittlung der Gesamtanzahl aller Termine</li>
+ *     <li>Bestimmung der Häufigkeit eines bestimmten Termintyps</li>
+ *     <li>Erstellung einer Verteilung nach Terminarten</li>
+ * </ul>
  */
 public class StatistikControllerFX {
 
     private final List<Termin> termine;
 
     /**
-     * Konstruktor: Lädt alle Termine des angegebenen Benutzers.
+     * Konstruktor. Lädt alle Termine für den angegebenen Benutzer.
+     * Bei Fehlern wird eine leere Liste verwendet.
      *
-     * @param username Benutzername, dessen Termin-Datei geladen werden soll.
+     * @param username Der Benutzername, dessen Termine analysiert werden sollen.
      */
     public StatistikControllerFX(String username) {
         String pfad = PfadManager.getTerminPfad(username);
@@ -29,7 +35,7 @@ public class StatistikControllerFX {
         try {
             geladen = CsvManager.loadTermine(pfad);
         } catch (IOException e) {
-            geladen = List.of();
+            geladen = List.of(); // falls Datei fehlt oder defekt
         }
         this.termine = geladen;
     }
@@ -37,18 +43,18 @@ public class StatistikControllerFX {
     /**
      * Gibt die Gesamtanzahl aller geladenen Termine zurück.
      *
-     * @return Anzahl aller Termine.
+     * @return Gesamtanzahl als {@code int}
      */
     public int getGesamtAnzahl() {
         return termine.size();
     }
 
     /**
-     * Zählt, wie viele Termine eine bestimmte Art haben.
-     * Die Vergleich erfolgt ohne Beachtung der Groß-/Kleinschreibung.
+     * Zählt die Anzahl der Termine mit einer bestimmten Art.
+     * Die Art wird dabei case-insensitive verglichen.
      *
-     * @param art Die Art von Termin (z.B. "Prüfung", "Meeting").
-     * @return Anzahl der Termine mit dieser Art.
+     * @param art Die Terminart (z.B. "Prüfung", "Meeting", etc.)
+     * @return Anzahl der entsprechenden Termine
      */
     public int getAnzahlNachArt(String art) {
         return (int) termine.stream()
@@ -57,9 +63,10 @@ public class StatistikControllerFX {
     }
 
     /**
-     * Erstellt eine Verteilung aller Terminarten.
+     * Erstellt eine Statistik über alle verschiedenen Terminarten.
+     * Jede Art wird einmalig als Schlüssel in der Map aufgeführt.
      *
-     * @return Map mit Terminart als Schlüssel und Anzahl als Wert.
+     * @return {@code Map<String, Integer>} mit Terminart als Schlüssel und Anzahl als Wert
      */
     public Map<String, Integer> getVerteilungNachArt() {
         Map<String, Integer> verteilung = new HashMap<>();

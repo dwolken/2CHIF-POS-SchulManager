@@ -12,8 +12,14 @@ import java.io.File;
 import java.util.List;
 
 /**
- * View für die Hauptanwendung inklusive Navigation, Menüleiste, Footer und Hauptbuttons.
- * Diese Klasse stellt das Hauptfenster dar, in dem alle Inhalte dynamisch geladen werden.
+ * Hauptansicht der Anwendung.
+ *
+ * <p>Diese View ist für die Anzeige des zentralen Layouts verantwortlich, bestehend aus
+ * Menüleiste, Navigation, Content-Bereich und Footer.</p>
+ *
+ * <p>Buttons und Menüpunkte ermöglichen den Zugriff auf Termin-, Ziel- und Statistikfunktionen,
+ * sowie auf Einstellungen und Dateioperationen. Sie nutzt den zugehörigen Controller für die
+ * Ereignisbehandlung.</p>
  */
 public class MainViewFX {
 
@@ -23,10 +29,10 @@ public class MainViewFX {
     private Label footerLabel;
 
     /**
-     * Konstruktor: Initialisiert die MainView mit Menü, Buttons und Footer.
+     * Konstruktor: Initialisiert die Hauptansicht mit Navigation, Footer und Controller-Verbindung.
      *
-     * @param primaryStage Das JavaFX-Fenster (Stage)
-     * @param username     Der aktuell eingeloggte Benutzername
+     * @param primaryStage Die Stage, in der die Scene gesetzt wird
+     * @param username     Aktuell angemeldeter Benutzer
      */
     public MainViewFX(Stage primaryStage, String username) {
         this.controller = new MainControllerFX(this, username);
@@ -45,14 +51,14 @@ public class MainViewFX {
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("SchulManager - Willkommen " + username);
-        primaryStage.setOnCloseRequest(event -> event.consume());
+        primaryStage.setOnCloseRequest(event -> event.consume()); // verhindert versehentliches Schließen
         primaryStage.show();
     }
 
     /**
-     * Erstellt die obere Navigationsbox mit Menüleiste und großen Hauptbuttons.
+     * Erstellt die Navigationsleiste bestehend aus Menüleiste und Buttonzeile.
      *
-     * @return VBox mit Menü und Button-Leiste
+     * @return VBox mit Menü und Navigationsbuttons
      */
     private VBox createNavigationBox() {
         VBox container = new VBox();
@@ -117,9 +123,9 @@ public class MainViewFX {
     }
 
     /**
-     * Zeigt die Startansicht mit Willkommensnachricht.
+     * Zeigt eine Willkommensansicht im Hauptbereich.
      *
-     * @param username Aktueller Benutzername
+     * @param username Der aktuell angemeldete Benutzername
      */
     public void loadWelcomeCenter(String username) {
         VBox centerBox = new VBox(20);
@@ -131,10 +137,10 @@ public class MainViewFX {
     }
 
     /**
-     * Erstellt den unteren Footerbereich mit Benutzerinfo, Speicherpfad und Logout-Button.
+     * Erstellt den unteren Footerbereich mit Benutzername, Speicherpfad-Info und Logout-Button.
      *
-     * @param username Aktueller Benutzername
-     * @return HBox mit Footer-Inhalt
+     * @param username Der angemeldete Benutzer
+     * @return Eine HBox als Footer-Komponente
      */
     private HBox createFooter(String username) {
         HBox footer = new HBox(10);
@@ -156,7 +162,7 @@ public class MainViewFX {
     }
 
     /**
-     * Aktualisiert die Pfadanzeige im Footer mit den aktuellen Speicherorten.
+     * Aktualisiert den Speicherpfad-Text im Footer.
      *
      * @param pfadTermine Pfad zur Termin-Datei
      * @param pfadZiele   Pfad zur Ziele-Datei
@@ -170,18 +176,18 @@ public class MainViewFX {
     }
 
     /**
-     * Setzt den Inhalt des Center-Bereichs im Hauptfenster.
+     * Setzt ein neues UI-Element in den Center-Bereich des Hauptlayouts.
      *
-     * @param node Das anzuzeigende UI-Element (z. B. TerminViewFX)
+     * @param node Ein JavaFX-Node, z.B. ein Formular oder eine Tabelle
      */
     public void setCenterContent(javafx.scene.Node node) {
         root.setCenter(node);
     }
 
     /**
-     * Gibt die aktuelle Scene zurück (z.B. für Theme-Umschaltung).
+     * Gibt die aktuelle Scene zurück, z.B. für Theme-Umschaltung.
      *
-     * @return Die JavaFX Scene
+     * @return Die Scene der Hauptansicht
      */
     public Scene getScene() {
         return root.getScene();

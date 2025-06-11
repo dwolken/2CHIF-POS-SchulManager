@@ -3,8 +3,8 @@ package at.spengergasse.projekt.model;
 import java.util.Objects;
 
 /**
- * Modellklasse für ein einzelnes Ziel.
- * Enthält den Zieltext und den Erledigt-Status (z. B. für To-Do-Listen).
+ * Repräsentiert ein Ziel eines Benutzers, z.B. als Eintrag in einer To-Do-Liste.
+ * Ein Ziel besteht aus einem beschreibenden Text sowie einem Erledigt-Status.
  */
 public class Ziele {
 
@@ -12,9 +12,9 @@ public class Ziele {
     private boolean erledigt;
 
     /**
-     * Erstellt ein neues Ziel mit unerledigtem Status.
+     * Erstellt ein neues Ziel, das standardmäßig als nicht erledigt gilt.
      *
-     * @param zielText Der Zielinhalt (z.B. "Mathe lernen")
+     * @param zielText Textbeschreibung des Ziels (z.B. „Mathe lernen“)
      */
     public Ziele(String zielText) {
         this.zielText = zielText;
@@ -22,9 +22,9 @@ public class Ziele {
     }
 
     /**
-     * Erstellt ein neues Ziel mit definiertem Status.
+     * Erstellt ein neues Ziel mit angegebenem Erledigt-Status.
      *
-     * @param zielText Inhalt des Ziels
+     * @param zielText Zieltext
      * @param erledigt true, wenn das Ziel bereits erledigt ist
      */
     public Ziele(String zielText, boolean erledigt) {
@@ -32,47 +32,31 @@ public class Ziele {
         this.erledigt = erledigt;
     }
 
-    /**
-     * Gibt den Zieltext zurück.
-     *
-     * @return Zieltext
-     */
+    /** @return Der Zieltext */
     public String getZielText() {
         return zielText;
     }
 
-    /**
-     * Setzt den Zieltext.
-     *
-     * @param zielText Neuer Text des Ziels
-     */
+    /** @param zielText Neuer Text für das Ziel */
     public void setZielText(String zielText) {
         this.zielText = zielText;
     }
 
-    /**
-     * Prüft, ob das Ziel als erledigt markiert ist.
-     *
-     * @return true, wenn erledigt
-     */
+    /** @return true, wenn das Ziel als erledigt markiert ist */
     public boolean isErledigt() {
         return erledigt;
     }
 
-    /**
-     * Setzt den Erledigt-Status.
-     *
-     * @param erledigt true, wenn erledigt
-     */
+    /** @param erledigt Neuer Erledigt-Status */
     public void setErledigt(boolean erledigt) {
         this.erledigt = erledigt;
     }
 
     /**
      * Gibt den Zieltext zurück.
-     * Wird z.B. von ListView verwendet.
+     * Wird z.B. von einer {@code ListView<Ziele>} zur Anzeige verwendet.
      *
-     * @return Zieltext als String
+     * @return Der Zieltext als Zeichenkette
      */
     @Override
     public String toString() {
@@ -80,10 +64,10 @@ public class Ziele {
     }
 
     /**
-     * Vergleicht zwei Ziele basierend auf ihrem Text.
+     * Zwei Ziele gelten als gleich, wenn ihr Zieltext identisch ist.
      *
      * @param o Vergleichsobjekt
-     * @return true, wenn Texte gleich sind
+     * @return true, wenn Zieltexte gleich sind
      */
     @Override
     public boolean equals(Object o) {
@@ -93,11 +77,7 @@ public class Ziele {
         return Objects.equals(zielText, ziele.zielText);
     }
 
-    /**
-     * Erzeugt einen Hashcode basierend auf dem Zieltext.
-     *
-     * @return Hashcode
-     */
+    /** @return Hashcode basierend auf dem Zieltext */
     @Override
     public int hashCode() {
         return Objects.hash(zielText);

@@ -15,8 +15,12 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 /**
- * Dieser Controller verarbeitet die Logik für Login und Registrierung.
- * Er übernimmt Event-Handling und startet die MainView oder AdminView bei Erfolg.
+ * Der {@code LoginControllerFX} steuert den Login- und Registrierungsprozess
+ * innerhalb der Benutzeroberfläche.
+ * <p>
+ * Er verarbeitet Benutzeraktionen wie Klicks und Tastatureingaben,
+ * überprüft die Anmeldedaten gegen gespeicherte Daten und startet
+ * entsprechende Views (AdminView oder MainView) basierend auf der Rolle.
  */
 public class LoginControllerFX {
 
@@ -25,10 +29,10 @@ public class LoginControllerFX {
 
     /**
      * Konstruktor für den LoginControllerFX.
-     * Initialisiert die View und lädt Pfade aus Datei.
+     * Lädt gespeicherte Pfade und speichert View + Stage zur Weiterverwendung.
      *
-     * @param view  Die LoginViewFX, die die Benutzeroberfläche enthält.
-     * @param stage Das aktuelle JavaFX-Stage-Fenster.
+     * @param view  Die Login-Oberfläche (LoginViewFX)
+     * @param stage Das aktuelle JavaFX-Window (Stage)
      */
     public LoginControllerFX(LoginViewFX view, Stage stage) {
         PfadManager.loadPfade();
@@ -37,9 +41,11 @@ public class LoginControllerFX {
     }
 
     /**
-     * Verknüpft Buttons und Tastaturereignisse (ENTER-Taste) mit der entsprechenden Logik.
+     * Initialisiert das Event-Handling für Buttons und die ENTER-Taste.
+     * Klick auf Login oder Register wird mit entsprechender Methode verknüpft.
+     * ENTER löst Login aus, wenn Felder befüllt sind – sonst Registrierung.
      *
-     * @param scene Die aktuelle JavaFX-Scene, auf die die Events angewendet werden.
+     * @param scene Die JavaFX-Szene, in der das Event-Handling eingebunden wird.
      */
     public void setupEventHandling(Scene scene) {
         view.getLoginButton().addEventHandler(ActionEvent.ACTION, this::handleLogin);
@@ -57,10 +63,11 @@ public class LoginControllerFX {
     }
 
     /**
-     * Führt den Loginvorgang durch. Prüft Benutzerdaten und öffnet je nach Rolle
-     * die AdminView oder MainView.
+     * Führt den Loginvorgang durch.
+     * Überprüft Benutzername und Passwort und öffnet bei Erfolg
+     * die Admin- oder Main-Ansicht basierend auf der Benutzerrolle.
      *
-     * @param e Das auslösende ActionEvent.
+     * @param e Das auslösende ActionEvent
      */
     private void handleLogin(ActionEvent e) {
         String username = view.getUsernameField().getText().trim();
@@ -84,9 +91,9 @@ public class LoginControllerFX {
 
             String role = CsvManager.getUserRole(username);
             Stage newStage = new Stage();
+            System.setProperty("aktuellerUser", username);
 
             if (role.equalsIgnoreCase("admin")) {
-                System.setProperty("aktuellerUser", username);
                 AdminViewFX adminView = new AdminViewFX();
                 Scene adminScene = new Scene(adminView, 600, 700);
                 adminScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
@@ -94,7 +101,6 @@ public class LoginControllerFX {
                 newStage.setScene(adminScene);
                 newStage.show();
             } else {
-                System.setProperty("aktuellerUser", username);
                 new MainViewFX(newStage, username);
             }
 
@@ -107,9 +113,9 @@ public class LoginControllerFX {
 
     /**
      * Führt die Registrierung eines neuen Benutzers durch.
-     * Der Benutzername "admin" ist reserviert.
+     * Benutzername "admin" ist reserviert und darf nicht verwendet werden.
      *
-     * @param e Das auslösende ActionEvent.
+     * @param e Das auslösende ActionEvent
      */
     private void handleRegistration(ActionEvent e) {
         String username = view.getUsernameField().getText().trim();
@@ -141,7 +147,7 @@ public class LoginControllerFX {
     }
 
     /**
-     * Zeigt eine Fehlermeldung im Fehler-Label der Login-View an.
+     * Zeigt eine Fehlermeldung im zugehörigen Label an.
      *
      * @param message Die anzuzeigende Fehlermeldung.
      */

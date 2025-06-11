@@ -1,6 +1,7 @@
 package at.spengergasse.projekt.controller;
 
 import at.spengergasse.projekt.model.CsvManager;
+import at.spengergasse.projekt.model.PfadManager;
 import at.spengergasse.projekt.view.LoginViewFX;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -11,13 +12,22 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
- * Controller für die Admin-Benutzerverwaltung.
- * Ermöglicht das Anzeigen, Bearbeiten und Löschen von Benutzern.
- * Unterstützt Passwortänderungen und Benutzernamenänderungen per Doppelklick.
+ * Der {@code AdminControllerFX} verwaltet die Benutzeroberfläche und Logik für die
+ * Administration von Benutzerkonten. Es ermöglicht:
+ * <ul>
+ *   <li>Erstellen neuer Benutzer</li>
+ *   <li>Löschen bestehender Benutzer</li>
+ *   <li>Passwortänderung für bestehende Benutzer</li>
+ *   <li>Benutzernamen umzubenennen</li>
+ * </ul>
+ * Die Benutzerinformationen werden als CSV-Dateien gespeichert und verwaltet.
  */
 public class AdminControllerFX {
 
@@ -31,7 +41,7 @@ public class AdminControllerFX {
     private final Button logoutButton = new Button("Abmelden");
 
     /**
-     * Konstruktor: Initialisiert Benutzerliste und Tabelle.
+     * Konstruktor. Initialisiert die Benutzerliste und Tabelle.
      */
     public AdminControllerFX() {
         this.benutzerListe = FXCollections.observableArrayList();
@@ -40,16 +50,19 @@ public class AdminControllerFX {
     }
 
     /**
-     * Gibt die Tabelle mit Benutzerdaten zurück.
-     * @return Tabelle mit Benutzern
+     * Gibt die Tabelle mit den Benutzerdaten zurück.
+     *
+     * @return TableView mit Benutzerdaten
      */
     public TableView<String[]> getTable() {
         return table;
     }
 
     /**
-     * Erstellt die Aktionsbuttons (Passwort ändern, Löschen) und deren Verhalten.
-     * @return HBox mit Buttons
+     * Gibt die HBox mit den Buttons zum Ändern und Löschen von Benutzern zurück.
+     * Enthält die zugehörige Logik bei Benutzer-Auswahl und Button-Aktionen.
+     *
+     * @return HBox mit Action-Buttons
      */
     public HBox getAktionen() {
         speichernButton.setDisable(true);
@@ -93,10 +106,24 @@ public class AdminControllerFX {
                     result.ifPresent(neuerName -> {
                         if (!neuerName.trim().isEmpty() && !neuerName.equals(selected[0])) {
                             try {
-                                String pass = neuesPasswortField.getText().trim();
-                                if (pass.isEmpty()) pass = "admin";
-                                CsvManager.deleteUser(selected[0]);
-                                CsvManager.saveUser(neuerName.trim(), pass, selected[1]);
+                                CsvManager.updateBenutzername(selected[0], neuerName.trim());
+
+                                String alterTerminPfad = PfadManager.getTerminPfad(selected[0]);
+                                String alterZielePfad = PfadManager.getZielePfad(selected[0]);
+
+                                String neuerTerminPfad = alterTerminPfad.replace(selected[0], neuerName.trim());
+                                String neuerZielePfad = alterZielePfad.replace(selected[0], neuerName.trim());
+
+                                renameFileIfExists(alterTerminPfad, neuerTerminPfad);
+                                renameFileIfExists(alterZielePfad, neuerZielePfad);
+
+                                String alteConfig = System.getProperty("user.home") + "/SchulManager/data/" + selected[0] + "_config.properties";
+                                String neueConfig = System.getProperty("user.home") + "/SchulManager/data/" + neuerName.trim() + "_config.properties";
+                                renameFileIfExists(alteConfig, neueConfig);
+
+                                PfadManager.setTerminPfad(neuerName.trim(), neuerTerminPfad);
+                                PfadManager.setZielePfad(neuerName.trim(), neuerZielePfad);
+
                                 loadBenutzer();
                                 clearFields();
                             } catch (IOException ex) {
@@ -116,8 +143,9 @@ public class AdminControllerFX {
     }
 
     /**
-     * Erstellt das Formular zur Eingabe neuer Benutzer.
-     * @return HBox mit Formularfeldern
+     * Erstellt das Formular zur Erstellung neuer Benutzer.
+     *
+     * @return HBox mit Eingabefeldern und Button
      */
     public HBox getFormular() {
         benutzernameField.setPromptText("Benutzername");
@@ -135,7 +163,8 @@ public class AdminControllerFX {
     }
 
     /**
-     * Gibt den Logout-Button mit Verhalten zurück.
+     * Gibt den Logout-Button zurück, mit zugehöriger Abmelde-Logik.
+     *
      * @return Logout-Button
      */
     public Button getLogoutButton() {
@@ -148,8 +177,9 @@ public class AdminControllerFX {
     }
 
     /**
-     * Erstellt die Tabelle mit Benutzername und Rolle.
-     * @return Benutzer-Tabelle
+     * Erstellt die Tabelle zur Anzeige aller Benutzer.
+     *
+     * @return TableView mit Name und Rolle
      */
     private TableView<String[]> createTable() {
         TableView<String[]> tableView = new TableView<>(benutzerListe);
@@ -169,7 +199,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Erzeugt einen neuen Benutzer.
+     * Verarbeitet das Erstellen eines neuen Benutzers.
      */
     private void handleNeuAnlegen() {
         String name = benutzernameField.getText().trim();
@@ -195,7 +225,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Ändert das Passwort eines Benutzers.
+     * Verarbeitet die Änderung des Passworts für den ausgewählten Benutzer.
      */
     private void handlePasswortAendern() {
         String[] selected = table.getSelectionModel().getSelectedItem();
@@ -222,7 +252,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Löscht den ausgewählten Benutzer (außer den eingeloggten).
+     * Verarbeitet das Löschen eines Benutzers (optional mit allen Dateien).
      */
     private void handleLöschen() {
         String[] selected = table.getSelectionModel().getSelectedItem();
@@ -241,18 +271,40 @@ public class AdminControllerFX {
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                CsvManager.deleteUser(selected[0]);
-                loadBenutzer();
-                clearFields();
-            } catch (IOException e) {
-                showFehler("Fehler beim Löschen.");
+            Alert detail = new Alert(Alert.AlertType.CONFIRMATION);
+            detail.setTitle("Dateien löschen?");
+            detail.setHeaderText("Benutzerdateien entfernen?");
+            detail.setContentText("Sollen auch alle zugehörigen Dateien (Termine, Ziele, Einstellungen) gelöscht werden?");
+
+            ButtonType nurBenutzer = new ButtonType("Nur Benutzer");
+            ButtonType allesLöschen = new ButtonType("Alles löschen");
+            ButtonType abbrechen = new ButtonType("Abbrechen", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            detail.getButtonTypes().setAll(allesLöschen, nurBenutzer, abbrechen);
+
+            Optional<ButtonType> auswahl = detail.showAndWait();
+
+            if (auswahl.isPresent()) {
+                try {
+                    CsvManager.deleteUser(selected[0]);
+
+                    if (auswahl.get() == allesLöschen) {
+                        Files.deleteIfExists(Paths.get(PfadManager.getTerminPfad(selected[0])));
+                        Files.deleteIfExists(Paths.get(PfadManager.getZielePfad(selected[0])));
+                        Files.deleteIfExists(Paths.get(System.getProperty("user.home") + "/SchulManager/data/" + selected[0] + "_config.properties"));
+                    }
+
+                    loadBenutzer();
+                    clearFields();
+                } catch (IOException e) {
+                    showFehler("Fehler beim Löschen.");
+                }
             }
         }
     }
 
     /**
-     * Lädt Benutzerliste neu aus CSV-Datei.
+     * Lädt alle Benutzer aus der CSV-Datei und aktualisiert die Tabelle.
      */
     private void loadBenutzer() {
         try {
@@ -263,7 +315,7 @@ public class AdminControllerFX {
     }
 
     /**
-     * Leert alle Eingabefelder.
+     * Setzt alle Eingabefelder zurück.
      */
     private void clearFields() {
         benutzernameField.clear();
@@ -272,8 +324,9 @@ public class AdminControllerFX {
     }
 
     /**
-     * Zeigt eine Fehlermeldung als Dialog.
-     * @param msg Text der Fehlermeldung
+     * Zeigt eine Fehlermeldung in einem Alert-Fenster.
+     *
+     * @param msg Fehlermeldung
      */
     private void showFehler(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -281,5 +334,19 @@ public class AdminControllerFX {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
+    }
+
+    /**
+     * Benennt eine Datei um, sofern sie existiert.
+     *
+     * @param altPfad Alter Dateipfad
+     * @param neuPfad Neuer Dateipfad
+     * @throws IOException falls Umbenennen fehlschlägt
+     */
+    private void renameFileIfExists(String altPfad, String neuPfad) throws IOException {
+        File altDatei = new File(altPfad);
+        if (altDatei.exists()) {
+            Files.move(altDatei.toPath(), new File(neuPfad).toPath());
+        }
     }
 }

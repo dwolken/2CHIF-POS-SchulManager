@@ -1,57 +1,64 @@
 package at.spengergasse.projekt.model;
 
 /**
- * Eigene Exception-Klasse für Fehler bei der Encoding-Verarbeitung.
- * Wird z.B. ausgelöst bei ungültigen Algorithmen oder fehlerhaften Eingaben.
+ * Die {@code EncodingException} ist eine benutzerdefinierte Ausnahme,
+ * die bei Fehlern im Zusammenhang mit der {@link Encoding}-Klasse ausgelöst wird.
+ * <p>
+ * Typische Ursachen:
+ * <ul>
+ *     <li>Ungültiger oder nicht unterstützter Algorithmus</li>
+ *     <li>Null-Werte bei Parametern</li>
+ *     <li>Ungültige Dateiobjekte</li>
+ * </ul>
  */
 public class EncodingException extends Exception {
 
-	/**
-	 * Standard-Konstruktor ohne Nachricht.
-	 */
-	public EncodingException() {
-		super();
-	}
+    /**
+     * Erstellt eine neue {@code EncodingException} ohne Nachricht.
+     */
+    public EncodingException() {
+        super();
+    }
 
-	/**
-	 * Konstruktor mit Fehlermeldung.
-	 *
-	 * @param message Beschreibende Fehlermeldung
-	 */
-	public EncodingException(String message) {
-		super(message);
-	}
+    /**
+     * Erstellt eine {@code EncodingException} mit einer Beschreibung.
+     *
+     * @param message Eine detailreiche Fehlermeldung
+     */
+    public EncodingException(String message) {
+        super(message);
+    }
 
-	/**
-	 * Konstruktor mit Ursache.
-	 *
-	 * @param cause Die zugrunde liegende Exception
-	 */
-	public EncodingException(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * Erstellt eine {@code EncodingException} mit der ursprünglichen Ursache.
+     *
+     * @param cause Die zugrunde liegende {@code Throwable}-Instanz
+     */
+    public EncodingException(Throwable cause) {
+        super(cause);
+    }
 
-	/**
-	 * Konstruktor mit Nachricht und Ursache.
-	 *
-	 * @param message Beschreibende Fehlermeldung
-	 * @param cause   Die zugrunde liegende Exception
-	 */
-	public EncodingException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    /**
+     * Erstellt eine {@code EncodingException} mit Nachricht und Ursache.
+     *
+     * @param message Fehlermeldung
+     * @param cause   Die ursprüngliche Exception
+     */
+    public EncodingException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	/**
-	 * Erweiterter Konstruktor mit Kontrolle über Suppression und StackTrace.
-	 *
-	 * @param message            Fehlermeldung
-	 * @param cause              Ursache
-	 * @param enableSuppression  Suppression unterdrücken
-	 * @param writableStackTrace StackTrace beschreibbar?
-	 */
-	public EncodingException(String message, Throwable cause,
-							 boolean enableSuppression,
-							 boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
+    /**
+     * Erweiteter Konstruktor mit zusätzlichen Kontrolloptionen.
+     *
+     * @param message            Beschreibung der Ausnahme
+     * @param cause              Ursächliche Exception
+     * @param enableSuppression  Gibt an, ob Suppression aktiviert ist
+     * @param writableStackTrace Gibt an, ob der StackTrace beschreibbar ist
+     */
+    public EncodingException(String message, Throwable cause,
+                             boolean enableSuppression,
+                             boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

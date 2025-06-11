@@ -9,17 +9,25 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
- * View zur Anzeige und Verwaltung von Terminen.
- * Besteht aus Tabelle, Eingabeformular und Aktions-Buttons.
+ * JavaFX-Komponente zur Anzeige und Bearbeitung von Terminen.
+ *
+ * <p>Diese View beinhaltet:</p>
+ * <ul>
+ *     <li>Eine Tabelle zur Anzeige aller gespeicherten Termine</li>
+ *     <li>Ein Eingabeformular zur Erstellung und Bearbeitung</li>
+ *     <li>Aktionselemente wie Löschen, Speichern etc.</li>
+ * </ul>
+ *
+ * <p>Die eigentliche Logik wird durch {@link TerminControllerFX} gesteuert.</p>
  */
 public class TerminViewFX extends VBox {
 
     private final TerminControllerFX controller;
 
     /**
-     * Konstruktor: Initialisiert die Terminansicht für den angegebenen Benutzer.
+     * Konstruktor: Erzeugt die gesamte Terminansicht für den gegebenen Benutzer.
      *
-     * @param username Benutzername für die geladenen Termin-Daten
+     * @param username Benutzername, für den die Termin-Daten geladen und verwaltet werden
      */
     public TerminViewFX(String username) {
         this.controller = new TerminControllerFX(username);
@@ -29,17 +37,17 @@ public class TerminViewFX extends VBox {
         setAlignment(Pos.TOP_CENTER);
         getStyleClass().add("termin-view");
 
-        // Tabelle mit Termin-Daten
+        // Termin-Tabelle
         TableView<Termin> table = controller.getTable();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setMaxWidth(Double.MAX_VALUE);
         VBox.setVgrow(table, Priority.ALWAYS);
 
-        // Formularbereich
+        // Eingabeformular
         VBox formularBox = new VBox(controller.getFormular());
         formularBox.setAlignment(Pos.CENTER);
 
-        // Buttonbereich
+        // Button-Bereich
         VBox buttonBox = new VBox(controller.getAktionen());
         buttonBox.setAlignment(Pos.CENTER);
 
@@ -47,9 +55,9 @@ public class TerminViewFX extends VBox {
     }
 
     /**
-     * Gibt die Termin-Tabelle zurück (z.B. für Tests oder manuelle Aktualisierung).
+     * Gibt die JavaFX-Tabelle mit allen Terminen zurück.
      *
-     * @return TableView mit Terminen
+     * @return TableView der gespeicherten Termine
      */
     public TableView<Termin> getTable() {
         return controller.getTable();

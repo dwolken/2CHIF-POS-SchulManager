@@ -9,15 +9,20 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
 /**
- * View zur Anzeige von Terminstatistiken.
- * Zeigt eine Kreisdiagramm-Auswertung der Terminarten sowie Gesamtanzahl.
+ * GUI-Komponente zur Darstellung von Terminstatistiken für einen Benutzer.
+ *
+ * <p>Zeigt die prozentuale Verteilung der Terminarten als Kreisdiagramm sowie
+ * eine Gesamtanzahl aller vorhandenen Termine. Daten werden über den zugehörigen
+ * Controller aus CSV-Dateien geladen.</p>
+ *
+ * <p>Diese View ist rein visuell und übernimmt keine Logikverarbeitung.</p>
  */
 public class StatistikViewFX extends VBox {
 
     /**
-     * Konstruktor: Initialisiert die Statistikansicht für einen Benutzer.
+     * Konstruktor: Baut die Statistik-Oberfläche für einen bestimmten Benutzer auf.
      *
-     * @param username Der aktuell eingeloggte Benutzer
+     * @param username Der eingeloggte Benutzer, dessen Termine ausgewertet werden
      */
     public StatistikViewFX(String username) {
         setPadding(new Insets(30));
@@ -27,12 +32,12 @@ public class StatistikViewFX extends VBox {
 
         StatistikControllerFX controller = new StatistikControllerFX(username);
 
-        // Überschrift
+        // Titel der Statistik
         Label headline = new Label("Statistik für " + username);
         headline.setFont(new Font(20));
         headline.getStyleClass().add("statistik-title");
 
-        // Diagramm mit Verteilung nach Termin-Art
+        // Kreisdiagramm zur Darstellung der Terminarten
         PieChart chart = new PieChart();
         controller.getVerteilungNachArt().forEach((art, anzahl) -> {
             chart.getData().add(new PieChart.Data(art, anzahl));
@@ -43,11 +48,11 @@ public class StatistikViewFX extends VBox {
         chart.setTitle("Verteilung nach Termin-Art");
         chart.getStyleClass().add("statistik-chart");
 
-        // Anzeige der Gesamtanzahl
+        // Gesamtanzahl der Termine als Text
         Label gesamtLabel = new Label("Gesamte Termine: " + controller.getGesamtAnzahl());
         gesamtLabel.getStyleClass().add("statistik-gesamt");
 
-        // Aufbau der View
+        // Zusammenbauen der GUI
         getChildren().addAll(headline, chart, gesamtLabel);
     }
 }

@@ -16,8 +16,15 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 /**
- * Controller zur Verwaltung und Anzeige von Terminen in der SchulManager-App.
- * Bietet Funktionen zum Speichern, Bearbeiten und Löschen von Terminen.
+ * Der {@code TerminControllerFX} verwaltet die Anzeige und Bearbeitung von Terminen.
+ * <p>
+ * Bietet Funktionalitäten wie:
+ * <ul>
+ *     <li>Erstellen neuer Termine</li>
+ *     <li>Bearbeiten von Notizen</li>
+ *     <li>Löschen bestehender Einträge</li>
+ *     <li>Speichern und Laden über CSV-Dateien</li>
+ * </ul>
  */
 public class TerminControllerFX {
 
@@ -33,9 +40,9 @@ public class TerminControllerFX {
     private final Button löschenButton = new Button("Löschen");
 
     /**
-     * Erstellt einen neuen Controller und lädt die Termine für den Benutzer.
+     * Konstruktor: Initialisiert Controller und lädt Termine für den angegebenen Benutzer.
      *
-     * @param username Aktueller Benutzername.
+     * @param username Aktueller Benutzername
      */
     public TerminControllerFX(String username) {
         this.username = username;
@@ -45,18 +52,18 @@ public class TerminControllerFX {
     }
 
     /**
-     * Gibt die Tabelle mit den Terminen zurück.
+     * Gibt die Tabelle mit den geladenen Terminen zurück.
      *
-     * @return TableView mit Termin-Objekten.
+     * @return {@code TableView} mit {@code Termin}-Objekten
      */
     public TableView<Termin> getTable() {
         return tableView;
     }
 
     /**
-     * Erstellt das Eingabeformular zur Erstellung eines neuen Termins.
+     * Erstellt das Eingabeformular für neue Termine.
      *
-     * @return HBox mit Eingabefeldern und Speichern-Button.
+     * @return HBox mit Eingabefeldern und Speicherbutton
      */
     public HBox getFormular() {
         titelField.setPromptText("Titel");
@@ -74,9 +81,9 @@ public class TerminControllerFX {
     }
 
     /**
-     * Erstellt die Aktionsleiste mit dem Löschen-Button und zugehörigem Verhalten.
+     * Erstellt die Leiste mit Löschbutton und definiert Auswahl-Logik.
      *
-     * @return HBox mit Lösch-Funktionalität.
+     * @return HBox mit Löschen-Funktionalität
      */
     public HBox getAktionen() {
         löschenButton.setDisable(true);
@@ -104,9 +111,9 @@ public class TerminControllerFX {
     }
 
     /**
-     * Erstellt und konfiguriert die Tabelle zur Anzeige der Termine.
+     * Erstellt und konfiguriert die Termin-Tabelle.
      *
-     * @return Eine vollständig konfigurierte TableView.
+     * @return Fertig konfigurierte {@code TableView}
      */
     private TableView<Termin> createTable() {
         TableView<Termin> table = new TableView<>(termine);
@@ -143,8 +150,8 @@ public class TerminControllerFX {
     }
 
     /**
-     * Verarbeitet das Speichern eines neuen Termins nach Validierung.
-     * Zeigt Warnung bei vergangenem Datum.
+     * Verarbeitet das Speichern eines neuen Termins.
+     * Bei vergangenem Datum wird eine Warnung angezeigt.
      */
     private void handleSpeichern() {
         String titel = titelField.getText().trim();
@@ -184,7 +191,7 @@ public class TerminControllerFX {
     }
 
     /**
-     * Löscht den aktuell ausgewählten Termin aus der Tabelle.
+     * Löscht den aktuell ausgewählten Termin aus der Tabelle und speichert die Änderung.
      */
     private void handleLöschen() {
         Termin ausgewählt = tableView.getSelectionModel().getSelectedItem();
@@ -195,7 +202,7 @@ public class TerminControllerFX {
     }
 
     /**
-     * Lädt alle gespeicherten Termine des aktuellen Benutzers.
+     * Lädt alle gespeicherten Termine aus der CSV-Datei des Benutzers.
      */
     private void loadTermine() {
         try {
@@ -207,7 +214,7 @@ public class TerminControllerFX {
     }
 
     /**
-     * Speichert alle aktuellen Termine in die entsprechende CSV-Datei.
+     * Speichert die aktuelle Liste von Terminen in die CSV-Datei des Benutzers.
      */
     private void saveTermine() {
         try {
@@ -219,9 +226,9 @@ public class TerminControllerFX {
     }
 
     /**
-     * Zeigt eine Fehlermeldung in einem Alert-Dialog.
+     * Zeigt eine Fehlermeldung als modaler Dialog an.
      *
-     * @param msg Die anzuzeigende Fehlermeldung.
+     * @param msg Der anzuzeigende Text.
      */
     private void showFehler(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

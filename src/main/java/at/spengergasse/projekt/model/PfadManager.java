@@ -6,9 +6,12 @@ import java.nio.file.Paths;
 import java.util.*;
 
 /**
- * Verwaltet benutzerabhängige Speicherpfade für Termine und Ziele.
- * Ermöglicht das dauerhafte Setzen, Zurücksetzen und Speichern der Pfade in einer Datei.
- * Wird ausschließlich im Model verwendet (MVC-Konformität).
+ * Der {@code PfadManager} verwaltet benutzerabhängige Speicherpfade
+ * für Termin- und Ziel-Dateien.
+ * <p>
+ * Die Pfade werden in einer CSV-Datei gespeichert und beim Programmstart geladen.
+ * Benutzer können individuelle Speicherorte für ihre Daten definieren.
+ * Die Klasse ist Teil des Model-Layers im MVC-Konzept.
  */
 public class PfadManager {
 
@@ -17,7 +20,8 @@ public class PfadManager {
     private static final String PFAD_DATEI = "data/pfade.csv";
 
     /**
-     * Setzt und speichert den benutzerdefinierten Pfad für Termine.
+     * Speichert den benutzerdefinierten Pfad für die Termin-Datei.
+     * Die Änderung wird sofort in der Datei persistiert.
      *
      * @param username Benutzername
      * @param pfad     Neuer Pfad zur Termin-Datei
@@ -28,7 +32,8 @@ public class PfadManager {
     }
 
     /**
-     * Setzt und speichert den benutzerdefinierten Pfad für Ziele.
+     * Speichert den benutzerdefinierten Pfad für die Ziele-Datei.
+     * Die Änderung wird sofort gespeichert.
      *
      * @param username Benutzername
      * @param pfad     Neuer Pfad zur Ziele-Datei
@@ -39,37 +44,39 @@ public class PfadManager {
     }
 
     /**
-     * Gibt den aktuellen Pfad für Termine zurück. Falls keiner gesetzt wurde, wird der Standardpfad zurückgegeben.
+     * Gibt den aktuellen Termin-Dateipfad für den Benutzer zurück.
+     * Falls kein individueller Pfad gesetzt wurde, wird ein Standardpfad verwendet.
      *
      * @param username Benutzername
-     * @return Pfad zur Termin-Datei
+     * @return Absoluter Pfad zur Termin-Datei
      */
     public static String getTerminPfad(String username) {
         return terminPfadMap.getOrDefault(username, getDefaultTerminPfad(username));
     }
 
     /**
-     * Gibt den aktuellen Pfad für Ziele zurück. Falls keiner gesetzt wurde, wird der Standardpfad zurückgegeben.
+     * Gibt den aktuellen Ziele-Dateipfad für den Benutzer zurück.
+     * Bei fehlender Zuordnung wird der Standardpfad zurückgegeben.
      *
      * @param username Benutzername
-     * @return Pfad zur Ziele-Datei
+     * @return Absoluter Pfad zur Ziele-Datei
      */
     public static String getZielePfad(String username) {
         return zielePfadMap.getOrDefault(username, getDefaultZielePfad(username));
     }
 
     /**
-     * Gibt den Standardpfad für Termine zurück.
+     * Liefert den Standardpfad für die Termin-Datei eines Benutzers.
      *
      * @param username Benutzername
-     * @return Standardpfad zur Termin-Datei
+     * @return Standardpfad (z.B. unter user.home)
      */
     public static String getDefaultTerminPfad(String username) {
         return System.getProperty("user.home") + "/SchulManager/data/" + username + "_termine.csv";
     }
 
     /**
-     * Gibt den Standardpfad für Ziele zurück.
+     * Liefert den Standardpfad für die Ziele-Datei eines Benutzers.
      *
      * @param username Benutzername
      * @return Standardpfad zur Ziele-Datei
@@ -79,7 +86,7 @@ public class PfadManager {
     }
 
     /**
-     * Entfernt alle benutzerdefinierten Pfade eines Users aus dem Speicher und Datei.
+     * Entfernt alle benutzerdefinierten Pfade eines Benutzers und speichert die Änderung.
      *
      * @param username Benutzername
      */
@@ -90,7 +97,8 @@ public class PfadManager {
     }
 
     /**
-     * Lädt alle gespeicherten Pfade aus der Datei (einmal beim App-Start aufrufen).
+     * Lädt gespeicherte Pfad-Zuordnungen aus der CSV-Datei.
+     * Sollte beim Start der Anwendung einmalig aufgerufen werden.
      */
     public static void loadPfade() {
         terminPfadMap.clear();
@@ -114,8 +122,8 @@ public class PfadManager {
     }
 
     /**
-     * Speichert alle aktuell gesetzten Pfade in die Datei.
-     * Wird nach jeder Änderung automatisch aufgerufen.
+     * Speichert alle aktuellen Pfad-Zuordnungen in die CSV-Datei.
+     * Wird bei jeder Änderung automatisch aufgerufen.
      */
     public static void savePfade() {
         try {
@@ -134,5 +142,26 @@ public class PfadManager {
         } catch (IOException e) {
             System.err.println("Fehler beim Speichern der Pfade: " + e.getMessage());
         }
+    }
+
+    /**
+     * Aktualisiert den Benutzernamen in allen Pfad-Zuordnungen.
+     * Die verknüpften Pfade bleiben erhalten.
+     *
+     * @param alterName Der bisherige Benutzername
+     * @param neuerName Der neue Benutzername
+     */
+    public static void updateBenutzername(String alterName, String neuerName) {
+        String terminPfad = terminPfadMap.remove(alterName);
+        String zielePfad = zielePfadMap.remove(alterName);
+
+        if (terminPfad != null) {
+            terminPfadMap.put(neuerName, terminPfad);
+        }
+        if (zielePfad != null) {
+            zielePfadMap.put(neuerName, zielePfad);
+        }
+
+        savePfade();
     }
 }

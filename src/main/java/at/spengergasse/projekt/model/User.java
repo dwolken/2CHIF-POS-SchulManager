@@ -1,8 +1,8 @@
 package at.spengergasse.projekt.model;
 
 /**
- * Repräsentiert einen Benutzer im System mit Benutzername, Rolle und verschlüsseltem Passwort.
- * Wird z. B. beim Laden von Benutzerdaten aus der CSV-Datei verwendet.
+ * Repräsentiert einen Benutzer im SchulManager-System mit Benutzername, Rolle und verschlüsseltem Passwort.
+ * Diese Klasse wird insbesondere für das Verwalten, Speichern und Vergleichen von Benutzerdaten verwendet.
  */
 public class User {
 
@@ -11,11 +11,11 @@ public class User {
     private final String verschlüsseltesPasswort;
 
     /**
-     * Erstellt ein neues User-Objekt mit den gegebenen Attributen.
+     * Erstellt ein neues {@code User}-Objekt mit den angegebenen Daten.
      *
-     * @param benutzername            Benutzername
-     * @param rolle                   Rolle des Benutzers (z.B. "admin", "user")
-     * @param verschlüsseltesPasswort Das bereits verschlüsselte Passwort (SHA256-Hash)
+     * @param benutzername            Eindeutiger Benutzername
+     * @param rolle                   Rolle des Benutzers (z. B. "admin" oder "user")
+     * @param verschlüsseltesPasswort Passwort als SHA256-Hash (bereits verschlüsselt)
      */
     public User(String benutzername, String rolle, String verschlüsseltesPasswort) {
         this.benutzername = benutzername;
@@ -23,29 +23,17 @@ public class User {
         this.verschlüsseltesPasswort = verschlüsseltesPasswort;
     }
 
-    /**
-     * Gibt den Benutzernamen zurück.
-     *
-     * @return Benutzername
-     */
+    /** @return Der Benutzername dieses Users */
     public String getBenutzername() {
         return benutzername;
     }
 
-    /**
-     * Gibt die Rolle des Benutzers zurück.
-     *
-     * @return Benutzerrolle
-     */
+    /** @return Die Rolle dieses Users (z.B. "admin") */
     public String getRolle() {
         return rolle;
     }
 
-    /**
-     * Gibt das verschlüsselte Passwort (z.B. SHA256-Hash) zurück.
-     *
-     * @return Passwort als Hash-String
-     */
+    /** @return Das verschlüsselte Passwort (Hashwert als String) */
     public String getVerschlüsseltesPasswort() {
         return verschlüsseltesPasswort;
     }

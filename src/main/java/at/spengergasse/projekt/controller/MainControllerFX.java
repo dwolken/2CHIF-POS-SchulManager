@@ -18,8 +18,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Controller für die Hauptanwendung. Verbindet UI-Events mit Anwendungslogik
- * und verwaltet Benutzerinteraktionen im Hauptfenster.
+ * Der {@code MainControllerFX} koordiniert die Benutzerinteraktionen in der Hauptanwendung.
+ * <p>
+ * Er verbindet die grafische Oberfläche mit der zugrunde liegenden Geschäftslogik
+ * und verwaltet das Öffnen von Ansichten, Dateioperationen, Speicherpfade und
+ * Darstellungsmodi wie z.B. den Dark Mode.
  */
 public class MainControllerFX {
 
@@ -28,9 +31,10 @@ public class MainControllerFX {
     private boolean darkModeAktiv = false;
 
     /**
-     * Konstruktor für den MainControllerFX.
-     * @param view Die zugehörige View-Instanz.
-     * @param username Der aktuell eingeloggte Benutzername.
+     * Konstruktor für den {@code MainControllerFX}.
+     *
+     * @param view     Die View der Hauptanwendung
+     * @param username Der aktuell eingeloggte Benutzername
      */
     public MainControllerFX(MainViewFX view, String username) {
         this.view = view;
@@ -38,23 +42,25 @@ public class MainControllerFX {
     }
 
     /**
-     * Aktualisiert den Footer-Pfad mit aktuellen Datei-Pfaden für Termine und Ziele.
+     * Aktualisiert die Fußzeile der Benutzeroberfläche mit aktuellen Dateipfaden.
      */
     public void updateFooter() {
         view.setFooterPath(PfadManager.getTerminPfad(username), PfadManager.getZielePfad(username));
     }
 
     /**
-     * Gibt den Benutzernamen zurück.
-     * @return Aktueller Benutzername.
+     * Gibt den aktuellen Benutzernamen zurück.
+     *
+     * @return Benutzername als {@code String}
      */
     public String getUsername() {
         return username;
     }
 
     /**
-     * Zeigt die Termin-Ansicht.
-     * @param e Event vom Button-Klick.
+     * Öffnet die Termin-Ansicht und aktualisiert den Footer.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleTermine(ActionEvent e) {
         view.setCenterContent(new TerminViewFX(username));
@@ -62,8 +68,9 @@ public class MainControllerFX {
     }
 
     /**
-     * Zeigt die Statistik-Ansicht.
-     * @param e Event vom Button-Klick.
+     * Öffnet die Statistik-Ansicht und aktualisiert den Footer.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleStatistik(ActionEvent e) {
         view.setCenterContent(new StatistikViewFX(username));
@@ -71,8 +78,9 @@ public class MainControllerFX {
     }
 
     /**
-     * Zeigt die Ziele-Ansicht.
-     * @param e Event vom Button-Klick.
+     * Öffnet die Ziele-Ansicht und aktualisiert den Footer.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleZiele(ActionEvent e) {
         view.setCenterContent(new ZieleViewFX(username));
@@ -80,8 +88,9 @@ public class MainControllerFX {
     }
 
     /**
-     * Öffnet eine neue Instanz der Anwendung (nur bei JAR-Datei).
-     * @param e Event vom Menüeintrag.
+     * Öffnet eine neue Instanz der Anwendung (funktioniert nur bei Start aus JAR-Datei).
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleNeueInstanz(ActionEvent e) {
         try {
@@ -98,8 +107,9 @@ public class MainControllerFX {
     }
 
     /**
-     * Ermöglicht dem Benutzer, den Speicherpfad für Termine zu ändern.
-     * @param e Event vom Menüeintrag.
+     * Ändert den Speicherort für Termin-Daten.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handlePfadAendernTermine(ActionEvent e) {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -113,14 +123,15 @@ public class MainControllerFX {
                 updateFooter();
                 view.setCenterContent(new TerminViewFX(username));
             } catch (IOException ex) {
-                new Alert(Alert.AlertType.ERROR, "Fehler beim Verschieben der Datei.").showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Datei noch nicht vorhanden").showAndWait();
             }
         }
     }
 
     /**
-     * Ermöglicht dem Benutzer, den Speicherpfad für Ziele zu ändern.
-     * @param e Event vom Menüeintrag.
+     * Ändert den Speicherort für Ziel-Daten.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handlePfadAendernZiele(ActionEvent e) {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -134,32 +145,55 @@ public class MainControllerFX {
                 updateFooter();
                 view.setCenterContent(new ZieleViewFX(username));
             } catch (IOException ex) {
-                new Alert(Alert.AlertType.ERROR, "Fehler beim Verschieben der Ziele-Datei.").showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Datei noch nicht vorhanden").showAndWait();
             }
         }
     }
 
     /**
-     * Setzt die Speicherpfade für Termine und Ziele auf die Standardwerte zurück.
-     * @param e Event vom Menüeintrag.
+     * Setzt Speicherpfade für Ziele und Termine auf Standardwerte zurück.
+     * Verschiebt aktuelle Dateien, wenn sie existieren.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handlePfadZuruecksetzen(ActionEvent e) {
         String defaultTermine = PfadManager.getDefaultTerminPfad(username);
         String defaultZiele = PfadManager.getDefaultZielePfad(username);
-        try {
-            Files.move(new File(PfadManager.getTerminPfad(username)).toPath(), new File(defaultTermine).toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Files.move(new File(PfadManager.getZielePfad(username)).toPath(), new File(defaultZiele).toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            new Alert(Alert.AlertType.ERROR, "Fehler beim Zurücksetzen der Pfade.").showAndWait();
+
+        File aktuelleTermine = new File(PfadManager.getTerminPfad(username));
+        File aktuelleZiele = new File(PfadManager.getZielePfad(username));
+
+        boolean termineExistieren = aktuelleTermine.exists();
+        boolean zieleExistieren = aktuelleZiele.exists();
+
+        if (!termineExistieren && !zieleExistieren) {
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Es wurden keine vorhandenen Dateien gefunden, die zurückgesetzt werden können.").showAndWait();
+            return;
         }
+
+        try {
+            if (termineExistieren) {
+                Files.move(aktuelleTermine.toPath(), new File(defaultTermine).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            if (zieleExistieren) {
+                Files.move(aktuelleZiele.toPath(), new File(defaultZiele).toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException ex) {
+            new Alert(Alert.AlertType.ERROR,
+                    "Fehler beim Zurücksetzen der Pfade. Möglicherweise sind die Dateien gerade geöffnet oder gesperrt.").showAndWait();
+        }
+
         PfadManager.setTerminPfad(username, defaultTermine);
         PfadManager.setZielePfad(username, defaultZiele);
         updateFooter();
     }
 
     /**
-     * Setzt die gesamte Benutzerumgebung zurück und löscht gespeicherte Daten.
-     * @param e Event vom Menüeintrag.
+     * Setzt Benutzeroberfläche und Dateien komplett zurück.
+     * Termine und Ziele werden gelöscht, Dark Mode deaktiviert.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleZuruecksetzen(ActionEvent e) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Willst du wirklich ALLES zurücksetzen? Alle Termine und Ziele werden gelöscht.");
@@ -179,8 +213,9 @@ public class MainControllerFX {
     }
 
     /**
-     * Führt den Logout durch und zeigt das Login-Fenster erneut.
-     * @param e Event vom Menüeintrag.
+     * Meldet den Benutzer ab und öffnet das Login-Fenster neu.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleLogout(ActionEvent e) {
         ((Stage) ((Button) e.getSource()).getScene().getWindow()).close();
@@ -188,9 +223,10 @@ public class MainControllerFX {
     }
 
     /**
-     * Schaltet den Dark Mode um und speichert die Einstellung.
-     * @param item Das Menüelement zur Umschaltung.
-     * @param scene Die aktuelle Szene.
+     * Aktiviert oder deaktiviert den Dark Mode und speichert die Auswahl.
+     *
+     * @param item  Das Menüelement, dessen Beschriftung angepasst wird.
+     * @param scene Die Szene, deren Stylesheet aktualisiert wird.
      */
     public void handleToggleDarkMode(MenuItem item, Scene scene) {
         darkModeAktiv = !darkModeAktiv;
@@ -202,7 +238,7 @@ public class MainControllerFX {
     }
 
     /**
-     * Speichert den Dark-Mode-Zustand in einer Konfigurationsdatei.
+     * Speichert den aktuellen Dark Mode-Zustand in eine Konfigurationsdatei.
      */
     public void saveDarkModeState() {
         try {
@@ -215,8 +251,9 @@ public class MainControllerFX {
     }
 
     /**
-     * Lädt die gespeicherte Dark-Mode-Einstellung beim Start.
-     * @param scene Die aktuelle Szene.
+     * Lädt die gespeicherte Dark Mode-Einstellung aus der Konfigurationsdatei.
+     *
+     * @param scene Die aktuelle JavaFX-Szene
      */
     public void loadDarkModeState(Scene scene) {
         try {
@@ -232,8 +269,10 @@ public class MainControllerFX {
     }
 
     /**
-     * Importiert Termine aus einer externen CSV-Datei.
-     * @param e Event vom Menüeintrag.
+     * Importiert eine CSV-Datei mit Terminen und fügt neue Einträge der eigenen Liste hinzu.
+     * Duplikate werden vermieden.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleTermineLaden(ActionEvent e) {
         FileChooser chooser = new FileChooser();
@@ -244,20 +283,31 @@ public class MainControllerFX {
         if (file != null) {
             try {
                 List<Termin> importiert = CsvManager.loadTermine(file.getAbsolutePath());
-                List<Termin> eigene = CsvManager.loadTermine(PfadManager.getTerminPfad(username));
-                eigene.addAll(importiert);
-                CsvManager.saveTermine(eigene, PfadManager.getTerminPfad(username));
+                String eigenerPfad = PfadManager.getTerminPfad(username);
+                List<Termin> eigene = CsvManager.loadTermine(eigenerPfad);
+
+                for (Termin termin : importiert) {
+                    if (!eigene.contains(termin)) {
+                        eigene.add(termin);
+                    }
+                }
+
+                CsvManager.saveTermine(eigene, eigenerPfad);
                 view.setCenterContent(new TerminViewFX(username));
                 updateFooter();
             } catch (IOException ex) {
-                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Termine.").showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Termine: " + ex.getMessage()).showAndWait();
             }
+        } else {
+            System.err.println("Dateiauswahl für Terminimport wurde abgebrochen oder war ungültig.");
         }
     }
 
     /**
-     * Importiert Ziele aus einer CSV-Datei.
-     * @param e Event vom Menüeintrag.
+     * Importiert eine CSV-Datei mit Zielen und fügt neue Einträge der eigenen Liste hinzu.
+     * Duplikate werden vermieden.
+     *
+     * @param e Auslösendes ActionEvent
      */
     public void handleZieleLaden(ActionEvent e) {
         FileChooser chooser = new FileChooser();
@@ -267,31 +317,24 @@ public class MainControllerFX {
 
         if (file != null) {
             try {
-                List<String> neueZeilen = Files.readAllLines(file.toPath());
-                File zielDatei = new File(PfadManager.getZielePfad(username));
-                if (!zielDatei.exists()) {
-                    zielDatei.getParentFile().mkdirs();
-                    zielDatei.createNewFile();
-                }
+                List<Ziele> importiert = CsvManager.loadZiele(file.getAbsolutePath());
+                String eigenerPfad = PfadManager.getZielePfad(username);
+                List<Ziele> eigene = CsvManager.loadZiele(eigenerPfad);
 
-                List<String> vorhandeneZeilen = Files.readAllLines(zielDatei.toPath());
-
-                for (String zeile : neueZeilen) {
-                    String[] parts = zeile.split(";", 2);
-                    if (parts.length == 2) {
-                        boolean erledigt = Boolean.parseBoolean(parts[0]);
-                        String text = parts[1];
-                        vorhandeneZeilen.add(erledigt + ";" + text);
+                for (Ziele ziel : importiert) {
+                    if (!eigene.contains(ziel)) {
+                        eigene.add(ziel);
                     }
                 }
 
-                Files.write(zielDatei.toPath(), vorhandeneZeilen);
+                CsvManager.saveZiele(eigene, eigenerPfad);
                 view.setCenterContent(new ZieleViewFX(username));
                 updateFooter();
-
             } catch (IOException ex) {
-                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Ziele.").showAndWait();
+                new Alert(Alert.AlertType.ERROR, "Fehler beim Importieren der Ziele: " + ex.getMessage()).showAndWait();
             }
+        } else {
+            System.err.println("Dateiauswahl abgebrochen oder ungültig.");
         }
     }
 }
