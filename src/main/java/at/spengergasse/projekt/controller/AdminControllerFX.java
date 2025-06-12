@@ -6,11 +6,15 @@ import at.spengergasse.projekt.view.LoginViewFX;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -163,18 +167,25 @@ public class AdminControllerFX {
     }
 
     /**
-     * Gibt den Logout-Button zurück, mit zugehöriger Abmelde-Logik.
+     * Erstellt die Logout-Schaltfläche.
      *
-     * @return Logout-Button
+     * @return Button für Logout
      */
-    public Button getLogoutButton() {
-        logoutButton.setOnAction(e -> {
-            Stage currentStage = (Stage) logoutButton.getScene().getWindow();
-            currentStage.close();
-            new LoginViewFX(new Stage());
-        });
-        return logoutButton;
+    public void handleLogout(Event e) {
+        Stage stage;
+
+        if (e instanceof ActionEvent) {
+            stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+        } else if (e instanceof WindowEvent) {
+            stage = (Stage) ((WindowEvent) e).getSource();
+        } else {
+            throw new IllegalArgumentException("Unbekannter Event-Typ beim Logout");
+        }
+
+        stage.close();
+        new LoginViewFX(new Stage());
     }
+
 
     /**
      * Erstellt die Tabelle zur Anzeige aller Benutzer.

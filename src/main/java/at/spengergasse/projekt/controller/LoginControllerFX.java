@@ -94,12 +94,7 @@ public class LoginControllerFX {
             System.setProperty("aktuellerUser", username);
 
             if (role.equalsIgnoreCase("admin")) {
-                AdminViewFX adminView = new AdminViewFX();
-                Scene adminScene = new Scene(adminView, 600, 700);
-                adminScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
-                newStage.setTitle("SchulManager - Willkommen admin");
-                newStage.setScene(adminScene);
-                newStage.show();
+                new AdminViewFX(newStage);
             } else {
                 new MainViewFX(newStage, username);
             }
