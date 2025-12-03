@@ -69,7 +69,7 @@ mvn clean install javafx:run
 
 - `src/` – Quellcode  
 - `pom.xml` – Maven-Konfiguration  
-- `data/` – gespeicherte Aufgaben/Termine
+- `data/` – gespeicherte Aufgaben/Termine/Benutzer
 - `ProjektbeschreibungSchulManager` - Erklärung zur Anwendung des Programms
 - `SchulManager.jar` – ausführbare Anwendung  
 - `README.md`
