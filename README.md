@@ -78,5 +78,5 @@ mvn clean install javafx:run
 
 ## Hinweis
 
-Dieses Projekt wurde im Rahmen des POS-Unterrichts (Programmentwicklung & Softwaredesign) umgesetzt.  
+Dieses Projekt wurde im Rahmen des POS-Unterrichts (Programmentwicklung & Softwaredevelopment) umgesetzt.  
 Es dient als einfaches, lokal ausführbares Tool zur Organisation des Schulalltags.
