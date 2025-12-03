@@ -38,6 +38,7 @@ Voraussetzungen:
 
 Start in einer IDE (z. B. IntelliJ oder VS Code):  
 Projekt als Maven-Projekt importieren und `Launcher.java` bzw. den Programmeinstieg starten.
+
 Alternativ in der Powershell über:
 ```
 mvn clean install javafx:run
