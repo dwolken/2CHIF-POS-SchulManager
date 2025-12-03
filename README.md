@@ -11,20 +11,33 @@ Es wurde im Rahmen eines Schulprojekts an der HTL Spengergasse entwickelt.
 git clone https://github.com/dwolken/2CHIF-POS-SchulManager.git
 cd 2CHIF-POS-SchulManager
 ```
+
 oder ZIP-Datei herunterladen und entpacken.
 
 ---
 
-## 2. Projekt öffnen & starten
+## 2. Anwendung starten
+
+Das Repository enthält eine ausführbare JAR-Datei.
+
+Starten der Anwendung:
+
+```
+java -jar SchulManager-1.0-SNAPSHOT.jar
+```
+
+---
+
+## 2. Projekt öffnen & starten (für Entwickler)
 
 Voraussetzungen:
 
-- Java 17+  
+- Java 17  
 - Maven  
-- JavaFX SDK
+- JavaFX (wird automatisch über Maven geladen)
 
-Start in IDE (z. B. IntelliJ oder VS Code):  
-Projekt als Maven-Projekt importieren und `Main.java` starten.
+Start in einer IDE (z. B. IntelliJ oder VS Code):  
+Projekt als Maven-Projekt importieren und `Launcher.java` bzw. den Programmeinstieg starten.
 
 ---
 
@@ -52,6 +65,7 @@ Projekt als Maven-Projekt importieren und `Main.java` starten.
 - `src/` – Quellcode  
 - `pom.xml` – Maven-Konfiguration  
 - `data/` – gespeicherte Aufgaben/Termine  
+- `SchulManager.jar` – ausführbare Anwendung  
 - `README.md`
 
 ---
