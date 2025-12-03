@@ -38,6 +38,10 @@ Voraussetzungen:
 
 Start in einer IDE (z. B. IntelliJ oder VS Code):  
 Projekt als Maven-Projekt importieren und `Launcher.java` bzw. den Programmeinstieg starten.
+Alternativ in der Powershell über:
+```
+mvn clean install javafx:run
+```
 
 ---
 
@@ -47,7 +51,7 @@ Projekt als Maven-Projekt importieren und `Launcher.java` bzw. den Programmeinst
 - Kalenderansicht  
 - GUI mit JavaFX-Komponenten  
 - Eingabe, Bearbeitung und Löschung von Einträgen  
-- Datenhaltung in JSON-Datei (lokal)
+- Datenhaltung in CSV-Datei (lokal)
 
 ---
 
@@ -56,7 +60,7 @@ Projekt als Maven-Projekt importieren und `Launcher.java` bzw. den Programmeinst
 - Java 17  
 - JavaFX  
 - Maven  
-- JSON für Datenspeicherung
+- CSV für Datenspeicherung
 
 ---
 
@@ -64,7 +68,8 @@ Projekt als Maven-Projekt importieren und `Launcher.java` bzw. den Programmeinst
 
 - `src/` – Quellcode  
 - `pom.xml` – Maven-Konfiguration  
-- `data/` – gespeicherte Aufgaben/Termine  
+- `data/` – gespeicherte Aufgaben/Termine
+- `ProjektbeschreibungSchulManager` - Erklärung zur Anwendung des Programms
 - `SchulManager.jar` – ausführbare Anwendung  
 - `README.md`
 
