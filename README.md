@@ -5,6 +5,15 @@ Es wurde im Rahmen eines Schulprojekts an der HTL Spengergasse entwickelt.
 
 ---
 
+## Voraussetzungen
+
+- Java JDK 17 oder neuer  
+- Maven (für Build und Entwicklung)
+
+> Hinweis: Falls `java` nicht erkannt wird, ist Java nicht installiert oder nicht im PATH verfügbar.
+
+---
+
 ## 1. Repository herunterladen
 
 ```
@@ -28,7 +37,7 @@ java -jar SchulManager-1.0-SNAPSHOT.jar
 
 ---
 
-## 2. Projekt öffnen & starten (für Entwickler)
+## 3. Projekt öffnen & starten (für Entwickler)
 
 Voraussetzungen:
 
@@ -46,7 +55,7 @@ mvn clean install javafx:run
 
 ---
 
-## 3. Funktionen
+## 4. Funktionen
 
 - Übersicht von Aufgaben und Terminen  
 - Kalenderansicht  
@@ -56,7 +65,7 @@ mvn clean install javafx:run
 
 ---
 
-## 4. Technologien
+## 5. Technologien
 
 - Java 17  
 - JavaFX  
@@ -65,7 +74,7 @@ mvn clean install javafx:run
 
 ---
 
-## 5. Struktur
+## 6. Struktur
 
 - `src/` – Quellcode  
 - `pom.xml` – Maven-Konfiguration  
