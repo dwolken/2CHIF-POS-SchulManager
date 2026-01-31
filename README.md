@@ -39,12 +39,6 @@ java -jar SchulManager-1.0-SNAPSHOT.jar
 
 ## 3. Projekt öffnen & starten (für Entwickler)
 
-Voraussetzungen:
-
-- Java 17  
-- Maven  
-- JavaFX (wird automatisch über Maven geladen)
-
 Start in einer IDE (z. B. IntelliJ oder VS Code):  
 Projekt als Maven-Projekt importieren und `Launcher.java` bzw. den Programmeinstieg starten.
 
